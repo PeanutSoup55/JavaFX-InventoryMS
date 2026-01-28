@@ -11,6 +11,7 @@ import javafx.scene.layout.BorderPane;
 public class Home extends BorderPane {
     public Home(){
         createMenu();
+        getStylesheets().add(getClass().getResource("/com/example/javafx_inventoryms/style/menu.css").toExternalForm());
     }
 
     public void createMenu(){
@@ -20,16 +21,18 @@ public class Home extends BorderPane {
         Menu usersMenu = new Menu("Users");
 
         MenuItem productsItem = new MenuItem("View Products");
+        MenuItem productsAdd = new MenuItem("Add Product");
         MenuItem ordersItem = new MenuItem("View Orders");
+        MenuItem ordersAdd = new MenuItem("Add Order");
         MenuItem usersItem = new MenuItem("View Users");
+        MenuItem usersAdd = new MenuItem("Add User");
 
-        productsMenu.getItems().add(productsItem);
-        salesMenu.getItems().add(ordersItem);
-        usersMenu.getItems().add(usersItem);
+        productsMenu.getItems().addAll(productsItem, productsAdd);
+        salesMenu.getItems().addAll(ordersItem, ordersAdd);
+        usersMenu.getItems().addAll(usersItem, usersAdd);
 
         menuBar.getMenus().addAll(salesMenu, productsMenu, usersMenu);
 
-        // 🔥 ACTIONS (this is the JavaFX equivalent of ActionListener)
         productsItem.setOnAction(e -> setCenter(new ProductsPage()));
         ordersItem.setOnAction(e -> setCenter(new SalesPage()));
         usersItem.setOnAction(e-> setCenter(new UsersPage()));

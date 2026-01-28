@@ -13,7 +13,7 @@ public class Main extends Application {
         stage.setTitle("Inventory Management System");
 
         Home home = new Home();
-        Scene scene = new Scene(home, 800, 600);
+        Scene scene = new Scene(home, 1200, 900);
 
         stage.setScene(scene);
         stage.show();

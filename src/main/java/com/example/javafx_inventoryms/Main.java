@@ -3,7 +3,6 @@ package com.example.javafx_inventoryms;
 import com.example.javafx_inventoryms.gui.Home;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -14,7 +13,9 @@ public class Main extends Application {
 
         Home home = new Home();
         Scene scene = new Scene(home, 1200, 900);
-
+        scene.getStylesheets().add(
+                getClass().getResource("/com/example/javafx_inventoryms/style/menu.css").toExternalForm()
+        );
         stage.setScene(scene);
         stage.show();
     }

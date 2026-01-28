@@ -10,10 +10,10 @@ import javafx.scene.layout.BorderPane;
 
 public class Home extends BorderPane {
     public Home(){
-        Menu();
+        createMenu();
     }
 
-    public void Menu(){
+    public void createMenu(){
         MenuBar menuBar = new MenuBar();
         Menu salesMenu = new Menu("Sales");
         Menu productsMenu = new Menu("Products");

@@ -38,7 +38,8 @@ build/
 ### Mac OS ###
 .DS_Store
 
-# Database credentials
-config.properties
-**/config.properties
-src/main/resources/**/config.properties
+# Ignore resources folder
+src/main/resources/*
+
+# But keep the CSS
+!src/main/resources/**/menu.css

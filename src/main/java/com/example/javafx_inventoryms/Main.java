@@ -1,5 +1,6 @@
 package com.example.javafx_inventoryms;
 
+import com.example.javafx_inventoryms.gui.Home;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -11,8 +12,8 @@ public class Main extends Application {
     public void start(Stage stage) {
         stage.setTitle("Inventory Management System");
 
-        Pane root = new Pane();
-        Scene scene = new Scene(root, 800, 600);
+        Home home = new Home();
+        Scene scene = new Scene(home, 800, 600);
 
         stage.setScene(scene);
         stage.show();

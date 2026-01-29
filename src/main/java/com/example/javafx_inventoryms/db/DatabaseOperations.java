@@ -150,4 +150,15 @@ public class DatabaseOperations {
         }
         return sales;
     }
+
+    public static boolean deleteSale(int id){
+        String sql = "DELETE FROM sales WHERE id=?";
+        try(Connection conn = DriverManager.getConnection(URL, USER, PASS); PreparedStatement statement = conn.prepareStatement(sql)){
+            statement.setInt(1, id);
+            return statement.executeUpdate() > 0;
+        }catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

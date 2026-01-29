@@ -45,12 +45,14 @@ public class DatabaseOperations {
             statement.executeUpdate(salesSQL);
 
         }catch (Exception e){
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
         }
     }
 
     public static boolean addProduct(String name, double price, int quantity, String station){
-        String sql = "INSERT INTO products (id, name, price, quantity, station, is_empty) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO products (id, name, price, quantity, station, is_empty) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS); PreparedStatement statement = conn.prepareStatement(sql)){
             statement.setString(1, name);
             statement.setDouble(2, price);
@@ -59,7 +61,9 @@ public class DatabaseOperations {
             statement.executeUpdate();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
             return false;
         }
     }
@@ -82,7 +86,9 @@ public class DatabaseOperations {
                 products.add(p);
             }
         }catch (SQLException e){
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
         }
         return products;
     }
@@ -101,7 +107,9 @@ public class DatabaseOperations {
 
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
             return false;
         }
     }
@@ -112,7 +120,9 @@ public class DatabaseOperations {
             statement.setInt(1, id);
             return statement.executeUpdate() > 0;
         }catch (SQLException e){
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
             return false;
         }
     }
@@ -126,7 +136,9 @@ public class DatabaseOperations {
             statement.executeUpdate();
             return true;
         }catch (SQLException e){
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
             return false;
         }
     }
@@ -146,7 +158,9 @@ public class DatabaseOperations {
                 sales.add(s);
             }
         }catch (SQLException e){
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
         }
         return sales;
     }
@@ -157,7 +171,9 @@ public class DatabaseOperations {
             statement.setInt(1, id);
             return statement.executeUpdate() > 0;
         }catch (SQLException e){
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
             return false;
         }
     }

@@ -1,6 +1,7 @@
 package com.example.javafx_inventoryms.db;
 
 import com.example.javafx_inventoryms.objects.Product;
+import com.example.javafx_inventoryms.objects.Sale;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -128,5 +129,25 @@ public class DatabaseOperations {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public static List<Sale> getAllSales(){
+        List<Sale> sales = new ArrayList<>();
+        String sql = "SELECT * FROM sales";
+        try(Connection conn = DriverManager.getConnection(URL, USER, PASS); Statement statement = conn.createStatement(); ResultSet set = statement.executeQuery(sql)){
+            while (set.next()){
+                Sale s = new Sale(
+                    set.getInt("id"),
+                    set.getDouble("net_revenue"),
+                    set.getDouble("profit"),
+                    set.getDouble("payroll_cost"),
+                    set.getTimestamp("sale_date")
+                );
+                sales.add(s);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return sales;
     }
 }

@@ -85,4 +85,23 @@ public class DatabaseOperations {
         }
         return products;
     }
+
+    public static boolean updateProduct(int id, String name, double price, int quantity, String station){
+        String sql = "UPDATE products SET name=?, price=?, quantity=?, station=?, is_empty=? WHERE id=?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, name);
+            pstmt.setDouble(2, price);
+            pstmt.setInt(3, quantity);
+            pstmt.setString(4, station);
+            pstmt.setBoolean(5, quantity == 0);
+            pstmt.setInt(6, id);
+
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

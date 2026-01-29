@@ -48,7 +48,7 @@ public class DatabaseOperations {
         }
     }
 
-    public static boolean addProduct(int id, String name, double price, int quantity, String station){
+    public static boolean addProduct(String name, double price, int quantity, String station){
         String sql = "INSERT INTO products (id, name, price, quantity, station, is_empty) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS); PreparedStatement statement = conn.prepareStatement(sql)){
             statement.setString(1, name);
@@ -110,6 +110,20 @@ public class DatabaseOperations {
         try(Connection conn = DriverManager.getConnection(URL, USER, PASS); PreparedStatement statement = conn.prepareStatement(sql)){
             statement.setInt(1, id);
             return statement.executeUpdate() > 0;
+        }catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean addSale(double net_revenue, double profit, double payroll_cost){
+        String sql = "INSERT INTO sales (net_revenue, profit, payroll_cost) VALUES (?, ?, ?)";
+        try(Connection conn = DriverManager.getConnection(URL, USER, PASS); PreparedStatement statement = conn.prepareStatement(sql)){
+            statement.setDouble(1, net_revenue);
+            statement.setDouble(2, profit);
+            statement.setDouble(3, payroll_cost);
+            statement.executeUpdate();
+            return true;
         }catch (SQLException e){
             e.printStackTrace();
             return false;

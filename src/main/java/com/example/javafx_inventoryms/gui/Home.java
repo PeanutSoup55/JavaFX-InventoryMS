@@ -29,29 +29,31 @@ public class Home extends BorderPane {
 
     public void createMenu(){
         MenuBar menuBar = new MenuBar();
-        Menu salesMenu = new Menu("Finance");
+        Menu salesMenu = new Menu("Sales");
         Menu productsMenu = new Menu("Products");
         Menu usersMenu = new Menu("Users");
+        Menu financeMenu = new Menu("Finance");
 
         MenuItem productsItem = new MenuItem("View Products");
         MenuItem productsAdd = new MenuItem("Add Product");
-        MenuItem finance = new MenuItem("Finance");
-        MenuItem payroll = new MenuItem("Payroll");
-        MenuItem addSale = new MenuItem("Sales");
+        MenuItem salesItem = new MenuItem("Sales Transactions");
+        MenuItem financeItem = new MenuItem("Financial Overview");
+        MenuItem payrollItem = new MenuItem("Payroll Management");
         MenuItem usersItem = new MenuItem("View Users");
         MenuItem usersAdd = new MenuItem("Add User");
 
         productsMenu.getItems().addAll(productsItem, productsAdd);
-        salesMenu.getItems().addAll(finance, payroll, addSale);
+        salesMenu.getItems().addAll(salesItem);
+        financeMenu.getItems().addAll(financeItem, payrollItem);
         usersMenu.getItems().addAll(usersItem, usersAdd);
 
-        menuBar.getMenus().addAll(productsMenu, salesMenu, usersMenu);
+        menuBar.getMenus().addAll(salesMenu, productsMenu, financeMenu, usersMenu);
 
         productsAdd.setOnAction(e -> setCenter(new ViewAddProducts()));
         productsItem.setOnAction(e -> setCenter(new UpdateDeleteProducts()));
-        //finance.setOnAction(e -> setCenter(new Finance()));
-        //payroll.setOnAction(e -> setCenter(new Payroll()));
-        addSale.setOnAction(e -> setCenter(new SalesPage()));
+        salesItem.setOnAction(e -> setCenter(new SalesPage()));
+        financeItem.setOnAction(e -> setCenter(new Finance()));
+        payrollItem.setOnAction(e -> setCenter(new Payroll()));
         usersItem.setOnAction(e-> setCenter(new UsersPage()));
 
         setTop(menuBar);

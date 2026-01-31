@@ -49,13 +49,6 @@ public class DatabaseOperations {
 
             statement.executeUpdate(usersSQL);
             statement.executeUpdate(productsSQL);
-            try {
-                statement.executeUpdate("DROP TABLE sales");
-                System.out.println("Old sales table dropped");
-            } catch (SQLException e) {
-                System.out.println("No old sales table to drop, creating new one");
-            }
-
             statement.executeUpdate(salesSQL);
             System.out.println("Tables initialized successfully");
 

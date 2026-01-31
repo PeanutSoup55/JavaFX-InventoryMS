@@ -2,6 +2,7 @@ package com.example.javafx_inventoryms.gui.Sales;
 
 import com.example.javafx_inventoryms.objects.Sale;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.*;
@@ -52,7 +53,40 @@ public class SalesPage extends ScrollPane{
     }
 
     public HBox createSummaryCards(){
+        HBox summaryBox = new HBox(15);
+        summaryBox.setAlignment(Pos.CENTER);
+        VBox dailyCard = createSummaryCard("Today's Sales", "$0.00", "daily-sales");
+        dailySalesLabel = (Label) ((VBox) dailyCard.getChildren().get(0)).getChildren().get(1);
+        VBox weeklyCard = createSummaryCard("This Week", "$0.00", "weekly-sales");
+        weeklySalesLabel = (Label) ((VBox) weeklyCard.getChildren().get(0)).getChildren().get(1);
+        VBox monthlyCard = createSummaryCard("This Month", "$0.00", "monthly-sales");
+        monthlySalesLabel = (Label) ((VBox) monthlyCard.getChildren().get(0)).getChildren().get(1);
+        HBox.setHgrow(dailyCard, Priority.ALWAYS);
+        HBox.setHgrow(weeklyCard, Priority.ALWAYS);
+        HBox.setHgrow(monthlyCard, Priority.ALWAYS);
+        summaryBox.getChildren().addAll(dailyCard, weeklyCard, monthlyCard);
+        return summaryBox;
+    }
+    public VBox createSummaryCard(String title, String value, String id){
+        VBox card = new VBox(10);
+        card.getStyleClass().add("form-panel");
+        card.setAlignment(Pos.CENTER);
+        card.setPadding(new Insets(20));
+        card.setId(id);
 
+        Label titleLabel = new Label(title);
+        titleLabel.getStyleClass().add("form-label");
+        titleLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
+
+        Label valueLabel = new Label(value);
+        valueLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+
+        VBox content = new VBox(5, titleLabel, valueLabel);
+        content.setAlignment(Pos.CENTER);
+
+        card.getChildren().add(content);
+
+        return card;
     }
     public VBox createFormPanel(){
 

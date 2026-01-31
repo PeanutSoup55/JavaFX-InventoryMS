@@ -5,6 +5,8 @@ import javafx.geometry.Insets;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 public class SalesPage extends ScrollPane{
@@ -37,6 +39,25 @@ public class SalesPage extends ScrollPane{
     }
 
     public void initComponents(){
+        Label titleLabel = new Label("Sales Management");
+        titleLabel.getStyleClass().add("form-title");
+        HBox summaryBox = createSummaryCards();
+        HBox mainContent = new HBox(20);
+        VBox formPanel = createFormPanel();
+        VBox dataPanel = createDataPanel();
+        HBox.setHgrow(formPanel, Priority.NEVER);
+        HBox.setHgrow(dataPanel, Priority.ALWAYS);
+        mainContent.getChildren().addAll(formPanel, dataPanel);
+        content.getChildren().addAll(titleLabel, summaryBox, mainContent);
+    }
+
+    public HBox createSummaryCards(){
+
+    }
+    public VBox createFormPanel(){
+
+    }
+    public VBox createDataPanel(){
 
     }
 

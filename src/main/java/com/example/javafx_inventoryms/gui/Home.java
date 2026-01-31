@@ -13,6 +13,12 @@ public class Home extends BorderPane {
     public Home(){
         createMenu();
         getStylesheets().add(getClass().getResource("/com/example/javafx_inventoryms/style/menu.css").toExternalForm());
+        try {
+            getStylesheets().add(getClass().getResource("/com/example/javafx_inventoryms/style/products.css").toExternalForm());
+        } catch (Exception e) {
+            System.out.println("Failed to load CSS: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void createMenu(){

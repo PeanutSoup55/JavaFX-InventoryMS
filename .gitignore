@@ -37,9 +37,3 @@ build/
 
 ### Mac OS ###
 .DS_Store
-
-# Ignore resources folder
-src/main/resources/*
-
-# But keep the CSS
-!src/main/resources/**/menu.css

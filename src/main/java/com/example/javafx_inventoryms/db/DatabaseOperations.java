@@ -53,12 +53,13 @@ public class DatabaseOperations {
     }
 
     public static boolean addProduct(String name, double price, int quantity, String station){
-        String sql = "INSERT INTO products (id, name, price, quantity, station, is_empty) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO products (name, price, quantity, station, is_empty) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS); PreparedStatement statement = conn.prepareStatement(sql)){
             statement.setString(1, name);
             statement.setDouble(2, price);
             statement.setInt(3, quantity);
             statement.setString(4, station);
+            statement.setBoolean(5, quantity == 0);
             statement.executeUpdate();
             return true;
         } catch (SQLException e) {

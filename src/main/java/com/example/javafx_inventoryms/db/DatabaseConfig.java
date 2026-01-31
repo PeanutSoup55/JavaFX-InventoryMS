@@ -4,7 +4,6 @@ public class DatabaseConfig {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/InvetoryMS";
     private static final String DB_USERNAME = "root";
     private static final String DB_PASSWORD = "";
-
     public static String getUrl() {
         return DB_URL;
     }

@@ -25,7 +25,7 @@
 /* Title Styles */
 .form-title {
     -fx-font-size: 24px;
-    -fx-font-weight: bold;
+    -fx-font-weight: 500;
     -fx-text-fill: #1e293b;
 }
 
@@ -179,7 +179,7 @@
 
 .table-view .column-header .label {
     -fx-font-size: 13px;
-    -fx-font-weight: bold;
+    -fx-font-weight: 500;
     -fx-text-fill: #475569;
     -fx-alignment: center-left;
 }

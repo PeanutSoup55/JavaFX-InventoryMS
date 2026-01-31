@@ -4,6 +4,7 @@ import com.example.javafx_inventoryms.objects.Product;
 import com.example.javafx_inventoryms.objects.Sale;
 import com.example.javafx_inventoryms.objects.User;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,16 +35,29 @@ public class DatabaseOperations {
         // 3. Sales Table
         String salesSQL = "CREATE TABLE IF NOT EXISTS sales ("
                 + "id INT AUTO_INCREMENT PRIMARY KEY, "
-                + "net_revenue DECIMAL(10, 2), "
-                + "profit DECIMAL(10, 2), "
-                + "payroll_cost DECIMAL(10, 2), "
+                + "gross_revenue DECIMAL(10, 2) NOT NULL, "
+                + "cost_of_goods_sold DECIMAL(10, 2) DEFAULT 0.00, "
+                + "operating_expenses DECIMAL(10, 2) DEFAULT 0.00, "
+                + "tax_amount DECIMAL(10, 2) DEFAULT 0.00, "
+                + "payment_method VARCHAR(50), "
+                + "invoice_number VARCHAR(100) UNIQUE, "
+                + "employee_id INT DEFAULT 0, "
                 + "sale_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
                 + ");";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS); Statement statement = conn.createStatement()){
+
             statement.executeUpdate(usersSQL);
             statement.executeUpdate(productsSQL);
+            try {
+                statement.executeUpdate("DROP TABLE sales");
+                System.out.println("Old sales table dropped");
+            } catch (SQLException e) {
+                System.out.println("No old sales table to drop, creating new one");
+            }
+
             statement.executeUpdate(salesSQL);
+            System.out.println("Tables initialized successfully");
 
         }catch (Exception e){
             for (StackTraceElement el : e.getStackTrace()) {
@@ -129,15 +143,25 @@ public class DatabaseOperations {
         }
     }
 
-    public static boolean addSale(double net_revenue, double profit, double payroll_cost){
-        String sql = "INSERT INTO sales (net_revenue, profit, payroll_cost) VALUES (?, ?, ?)";
-        try(Connection conn = DriverManager.getConnection(URL, USER, PASS); PreparedStatement statement = conn.prepareStatement(sql)){
-            statement.setDouble(1, net_revenue);
-            statement.setDouble(2, profit);
-            statement.setDouble(3, payroll_cost);
+    // Updated addSale method
+    public static boolean addSale(BigDecimal grossRevenue, BigDecimal costOfGoodsSold,
+                                  BigDecimal operatingExpenses, BigDecimal taxAmount,
+                                  String paymentMethod, String invoiceNumber, int employeeId) {
+        String sql = "INSERT INTO sales (gross_revenue, cost_of_goods_sold, operating_expenses, " +
+                "tax_amount, payment_method, invoice_number, employee_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try(Connection conn = DriverManager.getConnection(URL, USER, PASS);
+            PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setBigDecimal(1, grossRevenue);
+            statement.setBigDecimal(2, costOfGoodsSold);
+            statement.setBigDecimal(3, operatingExpenses);
+            statement.setBigDecimal(4, taxAmount);
+            statement.setString(5, paymentMethod);
+            statement.setString(6, invoiceNumber);
+            statement.setInt(7, employeeId);
             statement.executeUpdate();
             return true;
-        }catch (SQLException e){
+        } catch (SQLException e) {
             for (StackTraceElement el : e.getStackTrace()) {
                 System.err.println(el);
             }
@@ -145,21 +169,34 @@ public class DatabaseOperations {
         }
     }
 
-    public static List<Sale> getAllSales(){
+    // Simplified addSale for basic sales
+    public static boolean addSale(BigDecimal grossRevenue, BigDecimal costOfGoodsSold) {
+        return addSale(grossRevenue, costOfGoodsSold, BigDecimal.ZERO, BigDecimal.ZERO,
+                null, null, 0);
+    }
+
+    // Updated getAllSales method
+    public static List<Sale> getAllSales() {
         List<Sale> sales = new ArrayList<>();
-        String sql = "SELECT * FROM sales";
-        try(Connection conn = DriverManager.getConnection(URL, USER, PASS); Statement statement = conn.createStatement(); ResultSet set = statement.executeQuery(sql)){
-            while (set.next()){
+        String sql = "SELECT * FROM sales ORDER BY sale_date DESC";
+        try(Connection conn = DriverManager.getConnection(URL, USER, PASS);
+            Statement statement = conn.createStatement();
+            ResultSet set = statement.executeQuery(sql)) {
+            while (set.next()) {
                 Sale s = new Sale(
-                    set.getInt("id"),
-                    set.getDouble("net_revenue"),
-                    set.getDouble("profit"),
-                    set.getDouble("payroll_cost"),
-                    set.getTimestamp("sale_date")
+                        set.getInt("id"),
+                        set.getBigDecimal("gross_revenue"),
+                        set.getBigDecimal("cost_of_goods_sold"),
+                        set.getBigDecimal("operating_expenses"),
+                        set.getBigDecimal("tax_amount"),
+                        set.getTimestamp("sale_date")
                 );
+                s.setPaymentMethod(set.getString("payment_method"));
+                s.setInvoiceNumber(set.getString("invoice_number"));
+                s.setEmployeeId(set.getInt("employee_id"));
                 sales.add(s);
             }
-        }catch (SQLException e){
+        } catch (SQLException e) {
             for (StackTraceElement el : e.getStackTrace()) {
                 System.err.println(el);
             }
@@ -167,12 +204,38 @@ public class DatabaseOperations {
         return sales;
     }
 
-    public static boolean deleteSale(int id){
+    // Updated deleteSale method (no changes needed)
+    public static boolean deleteSale(int id) {
         String sql = "DELETE FROM sales WHERE id=?";
-        try(Connection conn = DriverManager.getConnection(URL, USER, PASS); PreparedStatement statement = conn.prepareStatement(sql)){
+        try(Connection conn = DriverManager.getConnection(URL, USER, PASS);
+            PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setInt(1, id);
             return statement.executeUpdate() > 0;
-        }catch (SQLException e){
+        } catch (SQLException e) {
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
+            return false;
+        }
+    }
+
+    // New: Update sale method
+    public static boolean updateSale(Sale sale) {
+        String sql = "UPDATE sales SET gross_revenue=?, cost_of_goods_sold=?, " +
+                "operating_expenses=?, tax_amount=?, payment_method=?, " +
+                "invoice_number=?, employee_id=? WHERE id=?";
+        try(Connection conn = DriverManager.getConnection(URL, USER, PASS);
+            PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setBigDecimal(1, sale.getGrossRevenue());
+            statement.setBigDecimal(2, sale.getCostOfGoodsSold());
+            statement.setBigDecimal(3, sale.getOperatingExpenses());
+            statement.setBigDecimal(4, sale.getTaxAmount());
+            statement.setString(5, sale.getPaymentMethod());
+            statement.setString(6, sale.getInvoiceNumber());
+            statement.setInt(7, sale.getEmployeeId());
+            statement.setInt(8, sale.getId());
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
             for (StackTraceElement el : e.getStackTrace()) {
                 System.err.println(el);
             }

@@ -49,8 +49,8 @@ public class Home extends BorderPane {
 
         productsAdd.setOnAction(e -> setCenter(new ViewAddProducts()));
         productsItem.setOnAction(e -> setCenter(new UpdateDeleteProducts()));
-        finance.setOnAction(e -> setCenter(new Finance()));
-        payroll.setOnAction(e -> setCenter(new Payroll()));
+        //finance.setOnAction(e -> setCenter(new Finance()));
+        //payroll.setOnAction(e -> setCenter(new Payroll()));
         addSale.setOnAction(e -> setCenter(new SalesPage()));
         usersItem.setOnAction(e-> setCenter(new UsersPage()));
 

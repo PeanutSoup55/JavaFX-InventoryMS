@@ -1,36 +1,19 @@
 package com.example.javafx_inventoryms.db;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 public class DatabaseConfig {
-    private static final Properties properties = new Properties();
-
-    static {
-        try (InputStream input = DatabaseConfig.class.getClassLoader()
-                .getResourceAsStream("config.properties")) {
-            if (input == null) {
-                System.out.println("Sorry, unable to find config.properties");
-            } else {
-                properties.load(input);
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/InvetoryMS";
+    private static final String DB_USERNAME = "root";
+    private static final String DB_PASSWORD = "";
 
     public static String getUrl() {
-        return properties.getProperty("db.url");
+        return DB_URL;
     }
 
     public static String getUsername() {
-        return properties.getProperty("db.username");
+        return DB_USERNAME;
     }
 
     public static String getPassword() {
-        return properties.getProperty("db.password");
+        return DB_PASSWORD;
     }
 }

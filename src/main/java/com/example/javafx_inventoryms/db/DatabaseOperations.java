@@ -14,7 +14,7 @@ public class DatabaseOperations {
     private static final String USER = DatabaseConfig.getUsername();
     private static final String PASS = DatabaseConfig.getPassword();
 
-    public void Initialize(){
+    public static void Initialize(){
         String usersSQL = "CREATE TABLE IF NOT EXISTS users ("
                 + "id INT AUTO_INCREMENT PRIMARY KEY, "
                 + "username VARCHAR(50) UNIQUE NOT NULL, "

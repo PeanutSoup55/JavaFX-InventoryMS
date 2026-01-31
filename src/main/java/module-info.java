@@ -10,4 +10,6 @@ module com.example.javafx_inventoryms {
 
     opens com.example.javafx_inventoryms to javafx.fxml;
     exports com.example.javafx_inventoryms;
+    opens com.example.javafx_inventoryms.objects to javafx.base;
+
 }

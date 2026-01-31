@@ -1,6 +1,7 @@
 package com.example.javafx_inventoryms.gui;
 
-import com.example.javafx_inventoryms.gui.Products.ProductsPage;
+import com.example.javafx_inventoryms.gui.Products.UpdateDeleteProducts;
+import com.example.javafx_inventoryms.gui.Products.ViewAddProducts;
 import com.example.javafx_inventoryms.gui.Sales.SalesPage;
 import com.example.javafx_inventoryms.gui.Users.UsersPage;
 import javafx.scene.control.Menu;
@@ -33,7 +34,8 @@ public class Home extends BorderPane {
 
         menuBar.getMenus().addAll(salesMenu, productsMenu, usersMenu);
 
-        productsItem.setOnAction(e -> setCenter(new ProductsPage()));
+        productsAdd.setOnAction(e -> setCenter(new ViewAddProducts()));
+        productsItem.setOnAction(e -> setCenter(new UpdateDeleteProducts()));
         ordersItem.setOnAction(e -> setCenter(new SalesPage()));
         usersItem.setOnAction(e-> setCenter(new UsersPage()));
 

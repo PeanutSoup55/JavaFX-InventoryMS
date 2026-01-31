@@ -14,7 +14,7 @@ public class Main extends Application {
         DatabaseOperations.Initialize();
 
         Home home = new Home();
-        Scene scene = new Scene(home, 1200, 900);
+        Scene scene = new Scene(home, 1400, 900);
 
         stage.setScene(scene);
         stage.show();

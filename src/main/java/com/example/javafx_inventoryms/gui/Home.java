@@ -25,6 +25,7 @@ public class Home extends BorderPane {
                 System.err.println(el);
             }
         }
+        setCenter(new SalesPage());
     }
 
     public void createMenu(){

@@ -209,7 +209,9 @@ public class ViewAddProducts extends VBox {
             showAlert(Alert.AlertType.ERROR, "Input Error", "Please enter valid numbers for price and quantity!");
         } catch (Exception ex) {
             showAlert(Alert.AlertType.ERROR, "Database Error", "Error: " + ex.getMessage());
-            ex.printStackTrace();
+            for (StackTraceElement el : ex.getStackTrace()) {
+                System.err.println(el);
+            }
         }
     }
 

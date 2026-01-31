@@ -9,15 +9,19 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
 
+import java.util.Objects;
+
 public class Home extends BorderPane {
     public Home(){
         createMenu();
-        getStylesheets().add(getClass().getResource("/com/example/javafx_inventoryms/style/menu.css").toExternalForm());
+        getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/example/javafx_inventoryms/style/menu.css")).toExternalForm());
         try {
-            getStylesheets().add(getClass().getResource("/com/example/javafx_inventoryms/style/products.css").toExternalForm());
+            getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/example/javafx_inventoryms/style/products.css")).toExternalForm());
         } catch (Exception e) {
             System.out.println("Failed to load CSS: " + e.getMessage());
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
         }
     }
 

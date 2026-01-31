@@ -1,6 +1,5 @@
 package com.example.javafx_inventoryms;
 
-import com.example.javafx_inventoryms.db.DatabaseConfig;
 import com.example.javafx_inventoryms.db.DatabaseOperations;
 import com.example.javafx_inventoryms.gui.Home;
 import javafx.application.Application;

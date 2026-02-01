@@ -2,12 +2,15 @@ package com.example.javafx_inventoryms.db;
 
 import com.example.javafx_inventoryms.objects.Product;
 import com.example.javafx_inventoryms.objects.Sale;
+import com.example.javafx_inventoryms.objects.SaleItem;
 import com.example.javafx_inventoryms.objects.User;
 
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DatabaseOperations {
 
@@ -254,96 +257,268 @@ public class DatabaseOperations {
         }
     }
 
-    // User Operations
-    public static boolean addUser(String username, String password) {
-        String sql = "INSERT INTO users (username, password) VALUES (?, ?)";
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-
-            pstmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            for (StackTraceElement el : e.getStackTrace()) {
-                System.err.println(el);
-            }
-            return false;
-        }
-    }
-    public static List<User> getAllUsers() {
-        List<User> users = new ArrayList<>();
-        String sql = "SELECT * FROM users";
-
+    public static double getTaxRate() {
+        String sql = "SELECT tax_rate FROM settings WHERE id = 1";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getDouble("tax_rate");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 13.0;
+    }
+
+    public static boolean setTaxRate(double rate) {
+        String sql = "UPDATE settings SET tax_rate = ? WHERE id = 1";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDouble(1, rate);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static int addSaleWithItems(List<SaleItem> items, String paymentMethod, String invoiceNumber, int employeeId) {
+        BigDecimal grossRevenue = BigDecimal.ZERO;
+        BigDecimal cogs = BigDecimal.ZERO;
+
+        for (SaleItem item : items) {
+            grossRevenue = grossRevenue.add(new BigDecimal(item.getTotalPrice()));
+            cogs = cogs.add(new BigDecimal(item.getTotalPrice()));
+        }
+
+        double taxRate = getTaxRate();
+        BigDecimal taxAmount = grossRevenue.multiply(new BigDecimal(taxRate / 100.0));
+        BigDecimal operatingExpenses = BigDecimal.ZERO;
+
+        String saleSql = "INSERT INTO sales (gross_revenue, cost_of_goods_sold, operating_expenses, " +
+                "tax_amount, payment_method, invoice_number, employee_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement stmt = conn.prepareStatement(saleSql, Statement.RETURN_GENERATED_KEYS)) {
+
+            conn.setAutoCommit(false);
+
+            stmt.setBigDecimal(1, grossRevenue);
+            stmt.setBigDecimal(2, cogs);
+            stmt.setBigDecimal(3, operatingExpenses);
+            stmt.setBigDecimal(4, taxAmount);
+            stmt.setString(5, paymentMethod);
+            stmt.setString(6, invoiceNumber);
+            stmt.setInt(7, employeeId);
+
+            stmt.executeUpdate();
+
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                int saleId = rs.getInt(1);
+
+                String itemSql = "INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
+                try (PreparedStatement itemStmt = conn.prepareStatement(itemSql)) {
+                    for (SaleItem item : items) {
+                        itemStmt.setInt(1, saleId);
+                        itemStmt.setInt(2, item.getProductId());
+                        itemStmt.setInt(3, item.getQuantity());
+                        itemStmt.setDouble(4, item.getUnitPrice());
+                        itemStmt.setDouble(5, item.getTotalPrice());
+                        itemStmt.executeUpdate();
+
+                        updateProductQuantity(conn, item.getProductId(), -item.getQuantity());
+                    }
+                }
+
+                conn.commit();
+                return saleId;
+            }
+
+            conn.rollback();
+            return -1;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    private static void updateProductQuantity(Connection conn, int productId, int quantityChange) throws SQLException {
+        String sql = "UPDATE products SET quantity = quantity + ? WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, quantityChange);
+            stmt.setInt(2, productId);
+            stmt.executeUpdate();
+        }
+    }
+
+    public static List<SaleItem> getSaleItems(int saleId) {
+        List<SaleItem> items = new ArrayList<>();
+        String sql = "SELECT si.*, p.name FROM sale_items si " +
+                "JOIN products p ON si.product_id = p.id " +
+                "WHERE si.sale_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, saleId);
+            ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                User u = new User(
+                items.add(new SaleItem(
                         rs.getInt("id"),
-                        rs.getString("username"),
-                        rs.getString("password")
-                );
-                users.add(u);
+                        rs.getInt("sale_id"),
+                        rs.getInt("product_id"),
+                        rs.getString("name"),
+                        rs.getInt("quantity"),
+                        rs.getDouble("unit_price"),
+                        rs.getDouble("total_price")
+                ));
             }
         } catch (SQLException e) {
-            for (StackTraceElement el : e.getStackTrace()) {
-                System.err.println(el);
-            }
+            e.printStackTrace();
         }
-        return users;
+
+        return items;
     }
 
-    public static boolean updateUser(int id, String username, String password) {
-        String sql = "UPDATE users SET username=?, password=? WHERE id=?";
+    public static Map<String, Integer> getTopSellingProducts(int limit) {
+        Map<String, Integer> topProducts = new HashMap<>();
+        String sql = "SELECT p.name, SUM(si.quantity) as total_sold " +
+                "FROM sale_items si " +
+                "JOIN products p ON si.product_id = p.id " +
+                "GROUP BY p.id, p.name " +
+                "ORDER BY total_sold DESC " +
+                "LIMIT ?";
+
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            ResultSet rs = stmt.executeQuery();
 
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-            pstmt.setInt(3, id);
-
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            for (StackTraceElement el : e.getStackTrace()) {
-                System.err.println(el);
+            while (rs.next()) {
+                topProducts.put(rs.getString("name"), rs.getInt("total_sold"));
             }
-            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+
+        return topProducts;
     }
 
-    public static boolean deleteUser(int id) {
-        String sql = "DELETE FROM users WHERE id=?";
+    public static Map<String, Double> getProductRevenueBreakdown() {
+        Map<String, Double> revenueByProduct = new HashMap<>();
+        String sql = "SELECT p.name, SUM(si.total_price) as total_revenue " +
+                "FROM sale_items si " +
+                "JOIN products p ON si.product_id = p.id " +
+                "GROUP BY p.id, p.name " +
+                "ORDER BY total_revenue DESC";
+
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
 
-            pstmt.setInt(1, id);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            for (StackTraceElement el : e.getStackTrace()) {
-                System.err.println(el);
+            while (rs.next()) {
+                revenueByProduct.put(rs.getString("name"), rs.getDouble("total_revenue"));
             }
-            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+
+        return revenueByProduct;
     }
 
-    public static boolean validateUser(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username=? AND password=?";
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-
-            ResultSet rs = pstmt.executeQuery();
-            return rs.next();
-        } catch (SQLException e) {
-            for (StackTraceElement el : e.getStackTrace()) {
-                System.err.println(el);
-            }
-            return false;
-        }
-    }
+    // User Operations
+//    public static boolean addUser(String username, String password) {
+//        String sql = "INSERT INTO users (username, password) VALUES (?, ?)";
+//        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//
+//            pstmt.setString(1, username);
+//            pstmt.setString(2, password);
+//
+//            pstmt.executeUpdate();
+//            return true;
+//        } catch (SQLException e) {
+//            for (StackTraceElement el : e.getStackTrace()) {
+//                System.err.println(el);
+//            }
+//            return false;
+//        }
+//    }
+//    public static List<User> getAllUsers() {
+//        List<User> users = new ArrayList<>();
+//        String sql = "SELECT * FROM users";
+//
+//        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+//             Statement stmt = conn.createStatement();
+//             ResultSet rs = stmt.executeQuery(sql)) {
+//
+//            while (rs.next()) {
+//                User u = new User(
+//                        rs.getInt("id"),
+//                        rs.getString("username"),
+//                        rs.getString("password")
+//                );
+//                users.add(u);
+//            }
+//        } catch (SQLException e) {
+//            for (StackTraceElement el : e.getStackTrace()) {
+//                System.err.println(el);
+//            }
+//        }
+//        return users;
+//    }
+//
+//    public static boolean updateUser(int id, String username, String password) {
+//        String sql = "UPDATE users SET username=?, password=? WHERE id=?";
+//        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//
+//            pstmt.setString(1, username);
+//            pstmt.setString(2, password);
+//            pstmt.setInt(3, id);
+//
+//            return pstmt.executeUpdate() > 0;
+//        } catch (SQLException e) {
+//            for (StackTraceElement el : e.getStackTrace()) {
+//                System.err.println(el);
+//            }
+//            return false;
+//        }
+//    }
+//
+//    public static boolean deleteUser(int id) {
+//        String sql = "DELETE FROM users WHERE id=?";
+//        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//
+//            pstmt.setInt(1, id);
+//            return pstmt.executeUpdate() > 0;
+//        } catch (SQLException e) {
+//            for (StackTraceElement el : e.getStackTrace()) {
+//                System.err.println(el);
+//            }
+//            return false;
+//        }
+//    }
+//
+//    public static boolean validateUser(String username, String password) {
+//        String sql = "SELECT * FROM users WHERE username=? AND password=?";
+//        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+//
+//            pstmt.setString(1, username);
+//            pstmt.setString(2, password);
+//
+//            ResultSet rs = pstmt.executeQuery();
+//            return rs.next();
+//        } catch (SQLException e) {
+//            for (StackTraceElement el : e.getStackTrace()) {
+//                System.err.println(el);
+//            }
+//            return false;
+//        }
+//    }
 }

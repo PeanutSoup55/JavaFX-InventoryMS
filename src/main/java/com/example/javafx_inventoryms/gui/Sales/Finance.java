@@ -133,7 +133,7 @@ public class Finance extends ScrollPane {
         titleLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
 
         Label valueLabel = new Label(value);
-        valueLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+        valueLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 500; -fx-text-fill: #1e293b;");
 
         VBox content = new VBox(5, titleLabel, valueLabel);
         content.setAlignment(Pos.CENTER);
@@ -250,9 +250,9 @@ public class Finance extends ScrollPane {
 
         // Set label colors based on profit
         if (totalProfit.compareTo(BigDecimal.ZERO) >= 0) {
-            totalProfitLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+            totalProfitLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 500; -fx-text-fill: #10b981;");
         } else {
-            totalProfitLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #ef4444;");
+            totalProfitLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 500; -fx-text-fill: #ef4444;");
         }
 
         // Load charts

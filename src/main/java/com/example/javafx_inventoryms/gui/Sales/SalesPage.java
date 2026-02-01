@@ -109,7 +109,7 @@ public class SalesPage extends ScrollPane {
         titleLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
 
         Label valueLabel = new Label(value);
-        valueLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-padding: 0 5 0 0;");
+        valueLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: 500; -fx-text-fill: #10b981; -fx-padding: 0 5 0 0;");
 
         VBox content = new VBox(5, titleLabel, valueLabel);
         content.setAlignment(Pos.CENTER);
@@ -174,7 +174,7 @@ public class SalesPage extends ScrollPane {
 
         // Calculated Profit Display
         Label profitLabel = new Label("Calculated Profit: $0.00");
-        profitLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #3b82f6;");
+        profitLabel.setStyle("-fx-font-weight: 500; -fx-text-fill: #3b82f6;");
 
         // Auto-calculate profit when fields change
         grossRevenueField.textProperty().addListener((obs, old, newVal) -> updateCalculatedProfit(profitLabel));
@@ -276,9 +276,9 @@ public class SalesPage extends ScrollPane {
                 } else {
                     setText(String.format("$%,.2f", item));
                     if (item.compareTo(BigDecimal.ZERO) >= 0) {
-                        setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
+                        setStyle("-fx-text-fill: #10b981; -fx-font-weight: 500;");
                     } else {
-                        setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+                        setStyle("-fx-text-fill: #ef4444; -fx-font-weight: 500;");
                     }
                 }
             }
@@ -385,13 +385,13 @@ public class SalesPage extends ScrollPane {
             profitLabel.setText(String.format("Calculated Profit: $%.2f", profit));
 
             if (profit >= 0) {
-                profitLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #10b981;");
+                profitLabel.setStyle("-fx-font-weight: 500; -fx-text-fill: #10b981;");
             } else {
-                profitLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #ef4444;");
+                profitLabel.setStyle("-fx-font-weight: 500; -fx-text-fill: #ef4444;");
             }
         } catch (NumberFormatException e) {
             profitLabel.setText("Calculated Profit: $0.00");
-            profitLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #3b82f6;");
+            profitLabel.setStyle("-fx-font-weight: 500; -fx-text-fill: #3b82f6;");
         }
     }
 

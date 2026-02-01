@@ -70,12 +70,12 @@ public class Payroll extends VBox {
         // Payroll Cost
         VBox payrollCard = createMetricCard("Payroll Cost", "$0.00");
         calculatedPayrollLabel = (Label) ((VBox) payrollCard.getChildren().get(0)).getChildren().get(1);
-        calculatedPayrollLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #ef4444;");
+        calculatedPayrollLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 500; -fx-text-fill: #ef4444;");
 
         // Payroll Rate
         VBox rateCard = createMetricCard("Payroll Rate", "0.00%");
         payrollRateLabel = (Label) ((VBox) rateCard.getChildren().get(0)).getChildren().get(1);
-        payrollRateLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #6366f1;");
+        payrollRateLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 500; -fx-text-fill: #6366f1;");
 
         // Profit Before Payroll
         VBox beforeCard = createMetricCard("Profit Before Payroll", "$0.00");
@@ -107,7 +107,7 @@ public class Payroll extends VBox {
         titleLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
 
         Label valueLabel = new Label(value);
-        valueLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+        valueLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 500; -fx-text-fill: #10b981;");
 
         VBox content = new VBox(5, titleLabel, valueLabel);
         content.setAlignment(Pos.CENTER);
@@ -178,7 +178,7 @@ public class Payroll extends VBox {
         infoBox.setStyle("-fx-background-color: #f0f9ff; -fx-padding: 16; -fx-background-radius: 8;");
 
         Label infoTitle = new Label("ℹ️ How This Works");
-        infoTitle.setStyle("-fx-font-weight: bold; -fx-text-fill: #0369a1; -fx-font-size: 14px;");
+        infoTitle.setStyle("-fx-font-weight: 500; -fx-text-fill: #0369a1; -fx-font-size: 14px;");
 
         Label infoText = new Label(
                 "This calculator shows how payroll costs affect your profit.\n\n" +
@@ -227,7 +227,7 @@ public class Payroll extends VBox {
         explanationBox.setStyle("-fx-background-color: #fefce8; -fx-padding: 16; -fx-background-radius: 8;");
 
         Label explanationTitle = new Label("💡 What You're Seeing");
-        explanationTitle.setStyle("-fx-font-weight: bold; -fx-text-fill: #854d0e; -fx-font-size: 14px;");
+        explanationTitle.setStyle("-fx-font-weight: 500; -fx-text-fill: #854d0e; -fx-font-size: 14px;");
 
         Label explanationText = new Label(
                 "The pie chart shows where your revenue goes:\n\n" +
@@ -307,16 +307,16 @@ public class Payroll extends VBox {
 
         // Color code profit before payroll
         if (totalProfit.compareTo(BigDecimal.ZERO) >= 0) {
-            profitBeforePayrollLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+            profitBeforePayrollLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 500; -fx-text-fill: #10b981;");
         } else {
-            profitBeforePayrollLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #ef4444;");
+            profitBeforePayrollLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 500; -fx-text-fill: #ef4444;");
         }
 
         // Color code profit after payroll
         if (profitAfterPayroll.compareTo(BigDecimal.ZERO) >= 0) {
-            profitAfterPayrollLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+            profitAfterPayrollLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 500; -fx-text-fill: #10b981;");
         } else {
-            profitAfterPayrollLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #ef4444;");
+            profitAfterPayrollLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 500; -fx-text-fill: #ef4444;");
         }
 
         // Update chart

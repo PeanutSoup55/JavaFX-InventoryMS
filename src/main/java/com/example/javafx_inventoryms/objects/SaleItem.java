@@ -6,14 +6,16 @@ public class SaleItem {
     private int productId;
     private String productName;
     private int quantity;
+    private double unitCOG;
     private double unitPrice;
     private double totalPrice;
 
-    public SaleItem(int productId, String productName, int quantity, double unitPrice) {
+    public SaleItem(int productId, String productName, int quantity, double unitPrice, double unitCOG) {
         this.productId = productId;
         this.productName = productName;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
+        this.unitCOG = unitCOG;
         this.totalPrice = quantity * unitPrice;
     }
 
@@ -37,5 +39,7 @@ public class SaleItem {
         this.totalPrice = quantity * unitPrice;
     }
     public double getUnitPrice() { return unitPrice; }
+    public double getUnitCOG() { return unitCOG; }
+    public double getTotalCOG() { return quantity * unitCOG; }
     public double getTotalPrice() { return totalPrice; }
 }

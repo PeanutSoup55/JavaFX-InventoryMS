@@ -34,6 +34,8 @@ public class Home extends BorderPane {
         Menu productsMenu = new Menu("Products");
         Menu usersMenu = new Menu("Users");
         Menu financeMenu = new Menu("Finance");
+        Menu settingsMenu = new Menu("Settings");
+        MenuItem taxSettingsItem = new MenuItem("Tax Rate");
 
         MenuItem productsItem = new MenuItem("View Products");
         MenuItem productsAdd = new MenuItem("Add Product");
@@ -47,8 +49,9 @@ public class Home extends BorderPane {
         salesMenu.getItems().addAll(salesItem);
         financeMenu.getItems().addAll(financeItem, payrollItem);
         usersMenu.getItems().addAll(usersItem, usersAdd);
+        settingsMenu.getItems().add(taxSettingsItem);
 
-        menuBar.getMenus().addAll(salesMenu, productsMenu, financeMenu, usersMenu);
+        menuBar.getMenus().addAll(salesMenu, productsMenu, financeMenu, usersMenu, settingsMenu);
 
         productsAdd.setOnAction(e -> setCenter(new ViewAddProducts()));
         productsItem.setOnAction(e -> setCenter(new UpdateDeleteProducts()));
@@ -56,6 +59,7 @@ public class Home extends BorderPane {
         financeItem.setOnAction(e -> setCenter(new Finance()));
         payrollItem.setOnAction(e -> setCenter(new Payroll()));
         usersItem.setOnAction(e-> setCenter(new UsersPage()));
+        taxSettingsItem.setOnAction(e -> setCenter(new Settings()));
 
         setTop(menuBar);
     }

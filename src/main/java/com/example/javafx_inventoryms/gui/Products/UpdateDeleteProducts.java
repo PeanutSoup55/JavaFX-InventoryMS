@@ -16,7 +16,7 @@ import java.util.Optional;
 public class UpdateDeleteProducts extends VBox {
     private TableView<Product> productTable;
     private ObservableList<Product> productData;
-    private TextField nameField, priceField, quantityField, stationField;
+    private TextField nameField, priceField, cogField, quantityField, stationField;
     private Button updateBtn, deleteBtn, refreshBtn, clearBtn;
     private int selectedProductId = -1;
 
@@ -63,6 +63,22 @@ public class UpdateDeleteProducts extends VBox {
             }
         });
 
+        TableColumn<Product, Double> cogCol = new TableColumn<>("COG");
+        cogCol.setCellValueFactory(new PropertyValueFactory<>("cog"));
+        cogCol.setPrefWidth(100);
+        cogCol.setCellFactory(col -> new TableCell<Product, Double>() {
+            @Override
+            protected void updateItem(Double cog, boolean empty) {
+                super.updateItem(cog, empty);
+                if (empty || cog == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("$%.2f", cog));
+                }
+            }
+        });
+
+
         TableColumn<Product, Integer> quantityCol = new TableColumn<>("Quantity");
         quantityCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         quantityCol.setPrefWidth(100);
@@ -96,7 +112,7 @@ public class UpdateDeleteProducts extends VBox {
             }
         });
 
-        productTable.getColumns().addAll(idCol, nameCol, priceCol, quantityCol, stationCol, emptyCol);
+        productTable.getColumns().addAll(idCol, nameCol, priceCol, cogCol, quantityCol, stationCol, emptyCol);
         productTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         // Table selection listener
@@ -105,11 +121,11 @@ public class UpdateDeleteProducts extends VBox {
                 selectedProductId = newSelection.getId();
                 nameField.setText(newSelection.getName());
                 priceField.setText(String.valueOf(newSelection.getPrice()));
+                cogField.setText(String.valueOf(newSelection.getCog()));
                 quantityField.setText(String.valueOf(newSelection.getQuantity()));
                 stationField.setText(newSelection.getStation());
             }
         });
-
         VBox.setVgrow(productTable, Priority.ALWAYS);
 
         // Form Panel for Updating Products
@@ -143,21 +159,29 @@ public class UpdateDeleteProducts extends VBox {
         priceField.setPrefWidth(300);
         formGrid.add(priceField, 1, 1);
 
+        Label cogLabel = new Label("Cost of Goods:");
+        cogLabel.getStyleClass().add("form-label");
+        formGrid.add(cogLabel, 0, 2);
+        cogField = new TextField();
+        cogField.setPromptText("Select a product from table");
+        cogField.setPrefWidth(300);
+        formGrid.add(cogField, 1, 2);
+
         Label quantityLabel = new Label("Quantity:");
         quantityLabel.getStyleClass().add("form-label");
-        formGrid.add(quantityLabel, 0, 2);
+        formGrid.add(quantityLabel, 0, 3);
         quantityField = new TextField();
         quantityField.setPromptText("Select a product from table");
         quantityField.setPrefWidth(300);
-        formGrid.add(quantityField, 1, 2);
+        formGrid.add(quantityField, 1, 3);
 
         Label stationLabel = new Label("Station:");
         stationLabel.getStyleClass().add("form-label");
-        formGrid.add(stationLabel, 0, 3);
+        formGrid.add(stationLabel, 0, 4);
         stationField = new TextField();
         stationField.setPromptText("Select a product from table");
         stationField.setPrefWidth(300);
-        formGrid.add(stationField, 1, 3);
+        formGrid.add(stationField, 1, 4);
 
         // Button Panel
         HBox buttonPanel = new HBox(12);
@@ -194,6 +218,7 @@ public class UpdateDeleteProducts extends VBox {
         clearFields();
     }
 
+    // Update updateProduct() method
     private void updateProduct() {
         if (selectedProductId == -1) {
             showAlert(Alert.AlertType.WARNING, "Selection Required", "Please select a product to update!");
@@ -203,6 +228,7 @@ public class UpdateDeleteProducts extends VBox {
         try {
             String name = nameField.getText().trim();
             String priceText = priceField.getText().trim();
+            String cogText = cogField.getText().trim();
             String quantityText = quantityField.getText().trim();
             String station = stationField.getText().trim();
 
@@ -211,27 +237,28 @@ public class UpdateDeleteProducts extends VBox {
                 return;
             }
 
-            if (priceText.isEmpty() || quantityText.isEmpty()) {
-                showAlert(Alert.AlertType.WARNING, "Validation Error", "Price and quantity cannot be empty!");
+            if (priceText.isEmpty() || cogText.isEmpty() || quantityText.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Validation Error", "Price, COG, and quantity cannot be empty!");
                 return;
             }
 
             double price = Double.parseDouble(priceText);
+            double cog = Double.parseDouble(cogText);
             int quantity = Integer.parseInt(quantityText);
 
-            if (price < 0 || quantity < 0) {
-                showAlert(Alert.AlertType.WARNING, "Validation Error", "Price and quantity must be positive!");
+            if (price < 0 || cog < 0 || quantity < 0) {
+                showAlert(Alert.AlertType.WARNING, "Validation Error", "Price, COG, and quantity must be positive!");
                 return;
             }
 
-            if (DatabaseOperations.updateProduct(selectedProductId, name, price, quantity, station)) {
+            if (DatabaseOperations.updateProduct(selectedProductId, name, price, cog, quantity, station)) {
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Product updated successfully!");
                 loadProducts();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update product!");
             }
         } catch (NumberFormatException ex) {
-            showAlert(Alert.AlertType.ERROR, "Input Error", "Please enter valid numbers for price and quantity!");
+            showAlert(Alert.AlertType.ERROR, "Input Error", "Please enter valid numbers for price, COG, and quantity!");
         } catch (Exception ex) {
             showAlert(Alert.AlertType.ERROR, "Database Error", "Error: " + ex.getMessage());
             for (StackTraceElement el : ex.getStackTrace()) {
@@ -265,6 +292,7 @@ public class UpdateDeleteProducts extends VBox {
     private void clearFields() {
         nameField.clear();
         priceField.clear();
+        cogField.clear();
         quantityField.clear();
         stationField.clear();
         selectedProductId = -1;

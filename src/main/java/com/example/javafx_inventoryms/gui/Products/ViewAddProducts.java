@@ -15,7 +15,7 @@ import java.util.List;
 public class ViewAddProducts extends VBox {
     private TableView<Product> productTable;
     private ObservableList<Product> productData;
-    private TextField nameField, priceField, quantityField, stationField;
+    private TextField nameField, priceField, quantityField, cogField, stationField;
     private Button addBtn, refreshBtn;
 
     public ViewAddProducts() {
@@ -66,6 +66,14 @@ public class ViewAddProducts extends VBox {
         quantityField.setPromptText("0");
         quantityField.setPrefWidth(300);
         formGrid.add(quantityField, 1, 2);
+
+        Label cogLabel = new Label("Cost of Goods:");
+        cogLabel.getStyleClass().add("form-label");
+        formGrid.add(cogLabel, 0, 4);
+        cogField = new TextField();
+        cogField.setPromptText("0.00");
+        cogField.setPrefWidth(300);
+        formGrid.add(cogField, 1, 4);
 
         Label stationLabel = new Label("Station:");
         stationLabel.getStyleClass().add("form-label");
@@ -125,6 +133,21 @@ public class ViewAddProducts extends VBox {
             }
         });
 
+        TableColumn<Product, Double> cogCol = new TableColumn<>("COG");
+        cogCol.setCellValueFactory(new PropertyValueFactory<>("cog"));
+        cogCol.setPrefWidth(100);
+        cogCol.setCellFactory(col -> new TableCell<Product, Double>() {
+            @Override
+            protected void updateItem(Double cog, boolean empty) {
+                super.updateItem(cog, empty);
+                if (empty || cog == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("$%.2f", cog));
+                }
+            }
+        });
+
         TableColumn<Product, Integer> quantityCol = new TableColumn<>("Quantity");
         quantityCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         quantityCol.setPrefWidth(100);
@@ -158,7 +181,7 @@ public class ViewAddProducts extends VBox {
             }
         });
 
-        productTable.getColumns().addAll(idCol, nameCol, priceCol, quantityCol, stationCol, emptyCol);
+        productTable.getColumns().addAll(idCol, nameCol, priceCol, cogCol, quantityCol, stationCol, emptyCol);
         productTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         VBox.setVgrow(productTable, Priority.ALWAYS);
@@ -178,6 +201,7 @@ public class ViewAddProducts extends VBox {
             String name = nameField.getText().trim();
             String priceText = priceField.getText().trim();
             String quantityText = quantityField.getText().trim();
+            String cogText = cogField.getText().trim();
             String station = stationField.getText().trim();
 
             // Validation
@@ -193,13 +217,14 @@ public class ViewAddProducts extends VBox {
 
             double price = Double.parseDouble(priceText);
             int quantity = Integer.parseInt(quantityText);
+            double cog = Double.parseDouble(cogText);
 
             if (price < 0 || quantity < 0) {
                 showAlert(Alert.AlertType.WARNING, "Validation Error", "Price and quantity must be positive!");
                 return;
             }
 
-            if (DatabaseOperations.addProduct(name, price, quantity, station)) {
+            if (DatabaseOperations.addProduct(name, price, quantity, cog, station)) {
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Product added successfully!");
                 loadProducts();
             } else {
@@ -218,6 +243,7 @@ public class ViewAddProducts extends VBox {
     private void clearFields() {
         nameField.clear();
         priceField.clear();
+        cogField.clear();
         quantityField.clear();
         stationField.clear();
     }

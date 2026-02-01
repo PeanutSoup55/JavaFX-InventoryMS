@@ -1,8 +1,11 @@
 package com.example.javafx_inventoryms.gui.Sales;
 
 import com.example.javafx_inventoryms.db.DatabaseOperations;
+import com.example.javafx_inventoryms.objects.Product;
 import com.example.javafx_inventoryms.objects.Sale;
+import com.example.javafx_inventoryms.objects.SaleItem;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.*;
@@ -13,19 +16,21 @@ import javafx.scene.layout.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 public class SalesPage extends ScrollPane {
 
+    private ComboBox<Product> productCombo;
+    private Spinner<Integer> quantitySpinner;
+    private TableView<SaleItem> currentSaleTable;
+    private ObservableList<SaleItem> currentSaleItems;
     private TableView<Sale> salesTable;
-    private TextField grossRevenueField;
-    private TextField cogsField;
-    private TextField operatingExpensesField;
-    private TextField taxAmountField;
     private ComboBox<String> paymentMethodCombo;
     private TextField invoiceNumberField;
-    private TextField employeeIdField;
+    private Label subtotalLabel;
+    private Label taxLabel;
+    private Label totalLabel;
+    private Label taxRateLabel;
     private Label dailySalesLabel;
     private Label weeklySalesLabel;
     private Label monthlySalesLabel;
@@ -34,9 +39,12 @@ public class SalesPage extends ScrollPane {
     private VBox content;
 
     public SalesPage() {
+
         content = new VBox(20);
         content.getStyleClass().add("vbox-container");
         content.setPadding(new Insets(20));
+
+        currentSaleItems = FXCollections.observableArrayList();
 
         initComponents();
         loadSalesData();
@@ -48,27 +56,18 @@ public class SalesPage extends ScrollPane {
     }
 
     private void initComponents() {
-        // Page Title
         Label titleLabel = new Label("Sales Management");
         titleLabel.getStyleClass().add("form-title");
 
-        // Sales Summary Cards
         HBox summaryBox = createSummaryCards();
-
-        // Main content area
         HBox mainContent = new HBox(20);
-
-        // Left side: Form
         VBox formPanel = createFormPanel();
-
-        // Right side: Table and Charts
         VBox dataPanel = createDataPanel();
 
         HBox.setHgrow(formPanel, Priority.NEVER);
         HBox.setHgrow(dataPanel, Priority.ALWAYS);
 
         mainContent.getChildren().addAll(formPanel, dataPanel);
-
         content.getChildren().addAll(titleLabel, summaryBox, mainContent);
     }
 
@@ -76,16 +75,13 @@ public class SalesPage extends ScrollPane {
         HBox summaryBox = new HBox(15);
         summaryBox.setAlignment(Pos.CENTER);
 
-        // Daily Sales Card
-        VBox dailyCard = createSummaryCard("Today's Sales", "$0.00", "daily-sales");
+        VBox dailyCard = createSummaryCard("Today's Sales", "$0.00");
         dailySalesLabel = (Label) ((VBox) dailyCard.getChildren().get(0)).getChildren().get(1);
 
-        // Weekly Sales Card
-        VBox weeklyCard = createSummaryCard("This Week", "$0.00", "weekly-sales");
+        VBox weeklyCard = createSummaryCard("This Week", "$0.00");
         weeklySalesLabel = (Label) ((VBox) weeklyCard.getChildren().get(0)).getChildren().get(1);
 
-        // Monthly Sales Card
-        VBox monthlyCard = createSummaryCard("This Month", "$0.00", "monthly-sales");
+        VBox monthlyCard = createSummaryCard("This Month", "$0.00");
         monthlySalesLabel = (Label) ((VBox) monthlyCard.getChildren().get(0)).getChildren().get(1);
 
         HBox.setHgrow(dailyCard, Priority.ALWAYS);
@@ -97,19 +93,18 @@ public class SalesPage extends ScrollPane {
         return summaryBox;
     }
 
-    private VBox createSummaryCard(String title, String value, String id) {
+    private VBox createSummaryCard(String title, String value) {
         VBox card = new VBox(10);
         card.getStyleClass().add("form-panel");
         card.setAlignment(Pos.CENTER);
         card.setPadding(new Insets(20));
-        card.setId(id);
 
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("form-label");
         titleLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
 
         Label valueLabel = new Label(value);
-        valueLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: 500; -fx-text-fill: #10b981; -fx-padding: 0 5 0 0;");
+        valueLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-padding: 0 5 0 0;");
 
         VBox content = new VBox(5, titleLabel, valueLabel);
         content.setAlignment(Pos.CENTER);
@@ -123,104 +118,243 @@ public class SalesPage extends ScrollPane {
         VBox formPanel = new VBox(15);
         formPanel.getStyleClass().add("form-panel");
         formPanel.setPadding(new Insets(24));
-        formPanel.setPrefWidth(350);
+        formPanel.setPrefWidth(400);
 
-        Label formTitle = new Label("Add New Sale");
+        Label formTitle = new Label("New Sale");
         formTitle.getStyleClass().add("section-title");
 
-        // Gross Revenue
-        Label revenueLabel = new Label("Gross Revenue ($):");
-        revenueLabel.getStyleClass().add("form-label");
-        grossRevenueField = new TextField();
-        grossRevenueField.setPromptText("0.00");
+        double currentTaxRate = DatabaseOperations.getTaxRate();
+        taxRateLabel = new Label(String.format("Tax Rate: %.1f%%", currentTaxRate));
+        taxRateLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
 
-        // COGS
-        Label cogsLabel = new Label("Cost of Goods Sold ($):");
-        cogsLabel.getStyleClass().add("form-label");
-        cogsField = new TextField("0.00");
-        cogsField.setPromptText("0.00");
+        Label productLabel = new Label("Select Product:");
+        productLabel.getStyleClass().add("form-label");
 
-        // Operating Expenses
-        Label expensesLabel = new Label("Operating Expenses ($):");
-        expensesLabel.getStyleClass().add("form-label");
-        operatingExpensesField = new TextField("0.00");
-        operatingExpensesField.setPromptText("0.00");
+        productCombo = new ComboBox<>();
+        productCombo.setPromptText("Choose product...");
+        productCombo.setPrefWidth(Double.MAX_VALUE);
+        loadProducts();
 
-        // Tax Amount
-        Label taxLabel = new Label("Tax Amount ($):");
-        taxLabel.getStyleClass().add("form-label");
-        taxAmountField = new TextField("0.00");
-        taxAmountField.setPromptText("0.00");
+        Label quantityLabel = new Label("Quantity:");
+        quantityLabel.getStyleClass().add("form-label");
 
-        // Payment Method
+        quantitySpinner = new Spinner<>(1, 999, 1);
+        quantitySpinner.setEditable(true);
+        quantitySpinner.setPrefWidth(Double.MAX_VALUE);
+
+        Button addToSaleButton = new Button("Add to Sale");
+        addToSaleButton.getStyleClass().add("btn-info");
+        addToSaleButton.setPrefWidth(Double.MAX_VALUE);
+        addToSaleButton.setOnAction(e -> addProductToSale());
+
+        Label currentSaleLabel = new Label("Current Sale Items:");
+        currentSaleLabel.getStyleClass().add("form-label");
+        currentSaleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        currentSaleTable = new TableView<>();
+        currentSaleTable.setItems(currentSaleItems);
+        currentSaleTable.setPrefHeight(200);
+        currentSaleTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<SaleItem, String> nameCol = new TableColumn<>("Product");
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("productName"));
+
+        TableColumn<SaleItem, Integer> qtyCol = new TableColumn<>("Qty");
+        qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        qtyCol.setPrefWidth(50);
+
+        TableColumn<SaleItem, Double> priceCol = new TableColumn<>("Price");
+        priceCol.setCellValueFactory(new PropertyValueFactory<>("totalPrice"));
+        priceCol.setCellFactory(col -> new TableCell<SaleItem, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : String.format("$%.2f", item));
+            }
+        });
+
+        currentSaleTable.getColumns().addAll(nameCol, qtyCol, priceCol);
+
+        Button removeItemButton = new Button("Remove Selected");
+        removeItemButton.getStyleClass().add("btn-danger");
+        removeItemButton.setOnAction(e -> removeSelectedItem());
+
+        subtotalLabel = new Label("Subtotal: $0.00");
+        subtotalLabel.setStyle("-fx-font-size: 14px;");
+
+        taxLabel = new Label("Tax: $0.00");
+        taxLabel.setStyle("-fx-font-size: 14px;");
+
+        totalLabel = new Label("Total: $0.00");
+        totalLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+
         Label paymentLabel = new Label("Payment Method:");
         paymentLabel.getStyleClass().add("form-label");
+
         paymentMethodCombo = new ComboBox<>(FXCollections.observableArrayList(
                 "Cash", "Credit Card", "Debit Card", "Check", "Digital Wallet", "Bank Transfer"
         ));
         paymentMethodCombo.setValue("Cash");
 
-        // Invoice Number
         Label invoiceLabel = new Label("Invoice Number:");
         invoiceLabel.getStyleClass().add("form-label");
+
         invoiceNumberField = new TextField();
-        invoiceNumberField.setPromptText("INV-" + System.currentTimeMillis());
+        invoiceNumberField.setPromptText("Auto-generated");
 
-        // Employee ID
-        Label employeeLabel = new Label("Employee ID:");
-        employeeLabel.getStyleClass().add("form-label");
-        employeeIdField = new TextField("0");
-        employeeIdField.setPromptText("0");
-
-        // Calculated Profit Display
-        Label profitLabel = new Label("Calculated Profit: $0.00");
-        profitLabel.setStyle("-fx-font-weight: 500; -fx-text-fill: #3b82f6;");
-
-        // Auto-calculate profit when fields change
-        grossRevenueField.textProperty().addListener((obs, old, newVal) -> updateCalculatedProfit(profitLabel));
-        cogsField.textProperty().addListener((obs, old, newVal) -> updateCalculatedProfit(profitLabel));
-        operatingExpensesField.textProperty().addListener((obs, old, newVal) -> updateCalculatedProfit(profitLabel));
-        taxAmountField.textProperty().addListener((obs, old, newVal) -> updateCalculatedProfit(profitLabel));
-
-        // Buttons
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER);
 
-        Button addButton = new Button("Add Sale");
-        addButton.getStyleClass().add("btn-primary");
-        addButton.setOnAction(e -> addSale());
+        Button completeSaleButton = new Button("Enter");
+        completeSaleButton.getStyleClass().add("btn-primary");
+        completeSaleButton.setOnAction(e -> completeSale());
 
         Button clearButton = new Button("Clear");
         clearButton.getStyleClass().add("btn-secondary");
         clearButton.setOnAction(e -> clearForm());
 
-        buttonBox.getChildren().addAll(addButton, clearButton);
+        buttonBox.getChildren().addAll(completeSaleButton, clearButton);
 
         formPanel.getChildren().addAll(
-                formTitle,
-                revenueLabel, grossRevenueField,
-                cogsLabel, cogsField,
-                expensesLabel, operatingExpensesField,
-                taxLabel, taxAmountField,
+                formTitle, taxRateLabel,
+                productLabel, productCombo,
+                quantityLabel, quantitySpinner,
+                addToSaleButton,
+                new Separator(),
+                currentSaleLabel, currentSaleTable, removeItemButton,
+                new Separator(),
+                subtotalLabel, taxLabel, totalLabel,
                 paymentLabel, paymentMethodCombo,
                 invoiceLabel, invoiceNumberField,
-                employeeLabel, employeeIdField,
-                profitLabel,
                 buttonBox
         );
 
         return formPanel;
     }
 
+    private void loadProducts() {
+        List<Product> products = DatabaseOperations.getAllProducts();
+        productCombo.setItems(FXCollections.observableArrayList(products));
+
+        productCombo.setCellFactory(param -> new ListCell<Product>() {
+            @Override
+            protected void updateItem(Product item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("%s - $%.2f (Stock: %d)",
+                            item.getName(), item.getPrice(), item.getQuantity()));
+                }
+            }
+        });
+
+        productCombo.setButtonCell(new ListCell<Product>() {
+            @Override
+            protected void updateItem(Product item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName());
+                }
+            }
+        });
+    }
+
+    private void addProductToSale() {
+        Product selected = productCombo.getValue();
+        if (selected == null) {
+            showError("No Product", "Please select a product.");
+            return;
+        }
+
+        int quantity = quantitySpinner.getValue();
+        if (quantity > selected.getQuantity()) {
+            showError("Insufficient Stock",
+                    String.format("Only %d units available.", selected.getQuantity()));
+            return;
+        }
+
+        SaleItem item = new SaleItem(
+                selected.getId(),
+                selected.getName(),
+                quantity,
+                selected.getPrice(),
+                selected.getCog()  // Add COG here
+        );
+
+        currentSaleItems.add(item);
+        updateTotals();
+
+        productCombo.setValue(null);
+        quantitySpinner.getValueFactory().setValue(1);
+    }
+
+    private void removeSelectedItem() {
+        SaleItem selected = currentSaleTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            currentSaleItems.remove(selected);
+            updateTotals();
+        }
+    }
+
+    private void updateTotals() {
+        double subtotal = currentSaleItems.stream()
+                .mapToDouble(SaleItem::getTotalPrice)
+                .sum();
+
+        double taxRate = DatabaseOperations.getTaxRate();
+        double tax = subtotal * (taxRate / 100.0);
+        double total = subtotal + tax;
+
+        subtotalLabel.setText(String.format("Subtotal: $%.2f", subtotal));
+        taxLabel.setText(String.format("Tax (%.1f%%): $%.2f", taxRate, tax));
+        totalLabel.setText(String.format("Total: $%.2f", total));
+    }
+
+    private void completeSale() {
+        if (currentSaleItems.isEmpty()) {
+            showError("Empty Sale", "Please add at least one product to the sale.");
+            return;
+        }
+
+        String paymentMethod = paymentMethodCombo.getValue();
+        String invoice = invoiceNumberField.getText().trim();
+        if (invoice.isEmpty()) {
+            invoice = "INV-" + System.currentTimeMillis();
+        }
+
+        int saleId = DatabaseOperations.addSaleWithItems(
+                new ArrayList<>(currentSaleItems),
+                paymentMethod,
+                invoice,
+                0
+        );
+
+        if (saleId > 0) {
+            showSuccess("Success", "Sale completed successfully!");
+            clearForm();
+            loadSalesData();
+            loadProducts();
+        } else {
+            showError("Error", "Failed to complete sale.");
+        }
+    }
+
+    private void clearForm() {
+        currentSaleItems.clear();
+        productCombo.setValue(null);
+        quantitySpinner.getValueFactory().setValue(1);
+        paymentMethodCombo.setValue("Cash");
+        invoiceNumberField.clear();
+        updateTotals();
+    }
+
     private VBox createDataPanel() {
         VBox dataPanel = new VBox(20);
-
-        // Sales Table
         VBox tablePanel = createTablePanel();
-
-        // Charts Row
         HBox chartsRow = new HBox(20);
-
         VBox trendChartPanel = createTrendChart();
         VBox paymentChartPanel = createPaymentChart();
 
@@ -228,7 +362,6 @@ public class SalesPage extends ScrollPane {
         HBox.setHgrow(paymentChartPanel, Priority.ALWAYS);
 
         chartsRow.getChildren().addAll(trendChartPanel, paymentChartPanel);
-
         VBox.setVgrow(tablePanel, Priority.ALWAYS);
 
         dataPanel.getChildren().addAll(tablePanel, chartsRow);
@@ -276,9 +409,9 @@ public class SalesPage extends ScrollPane {
                 } else {
                     setText(String.format("$%,.2f", item));
                     if (item.compareTo(BigDecimal.ZERO) >= 0) {
-                        setStyle("-fx-text-fill: #10b981; -fx-font-weight: 500;");
+                        setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
                     } else {
-                        setStyle("-fx-text-fill: #ef4444; -fx-font-weight: 500;");
+                        setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
                     }
                 }
             }
@@ -292,18 +425,16 @@ public class SalesPage extends ScrollPane {
 
         salesTable.getColumns().addAll(idCol, invoiceCol, revenueCol, profitCol, paymentCol, dateCol);
 
-        // Context menu for table
         ContextMenu contextMenu = new ContextMenu();
-        MenuItem viewItem = new MenuItem("View Details");
+        MenuItem viewItem = new MenuItem("View Items");
         MenuItem deleteItem = new MenuItem("Delete");
 
-        viewItem.setOnAction(e -> viewSaleDetails());
+        viewItem.setOnAction(e -> viewSaleItems());
         deleteItem.setOnAction(e -> deleteSale());
 
         contextMenu.getItems().addAll(viewItem, deleteItem);
         salesTable.setContextMenu(contextMenu);
 
-        // Action buttons
         HBox actionBox = new HBox(10);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
 
@@ -372,65 +503,30 @@ public class SalesPage extends ScrollPane {
         return chartPanel;
     }
 
-    private void updateCalculatedProfit(Label profitLabel) {
-        try {
-            double revenue = parseDouble(grossRevenueField.getText());
-            double cogs = parseDouble(cogsField.getText());
-            double expenses = parseDouble(operatingExpensesField.getText());
-            double tax = parseDouble(taxAmountField.getText());
-
-            double netRevenue = revenue - tax;
-            double profit = netRevenue - cogs - expenses;
-
-            profitLabel.setText(String.format("Calculated Profit: $%.2f", profit));
-
-            if (profit >= 0) {
-                profitLabel.setStyle("-fx-font-weight: 500; -fx-text-fill: #10b981;");
-            } else {
-                profitLabel.setStyle("-fx-font-weight: 500; -fx-text-fill: #ef4444;");
-            }
-        } catch (NumberFormatException e) {
-            profitLabel.setText("Calculated Profit: $0.00");
-            profitLabel.setStyle("-fx-font-weight: 500; -fx-text-fill: #3b82f6;");
+    private void viewSaleItems() {
+        Sale selected = salesTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showError("Selection Error", "Please select a sale.");
+            return;
         }
-    }
 
-    private double parseDouble(String text) {
-        if (text == null || text.trim().isEmpty()) return 0.0;
-        return Double.parseDouble(text.trim());
-    }
+        List<SaleItem> items = DatabaseOperations.getSaleItems(selected.getId());
 
-    private void addSale() {
-        try {
-            BigDecimal grossRevenue = new BigDecimal(grossRevenueField.getText());
-            BigDecimal cogs = new BigDecimal(cogsField.getText().isEmpty() ? "0" : cogsField.getText());
-            BigDecimal opEx = new BigDecimal(operatingExpensesField.getText().isEmpty() ? "0" : operatingExpensesField.getText());
-            BigDecimal tax = new BigDecimal(taxAmountField.getText().isEmpty() ? "0" : taxAmountField.getText());
+        Alert dialog = new Alert(Alert.AlertType.INFORMATION);
+        dialog.setTitle("Sale Items");
+        dialog.setHeaderText("Sale #" + selected.getId() + " - Invoice: " + selected.getInvoiceNumber());
 
-            if (grossRevenue.compareTo(BigDecimal.ZERO) <= 0) {
-                showError("Validation Error", "Gross revenue must be greater than zero.");
-                return;
-            }
-
-            String paymentMethod = paymentMethodCombo.getValue();
-            String invoiceNumber = invoiceNumberField.getText().trim();
-            int employeeId = Integer.parseInt(employeeIdField.getText().isEmpty() ? "0" : employeeIdField.getText());
-
-            // Use the database operation to add sale
-            boolean success = DatabaseOperations.addSale(grossRevenue, cogs, opEx, tax,
-                    paymentMethod, invoiceNumber, employeeId);
-
-            if (success) {
-                showSuccess("Success", "Sale added successfully!");
-                clearForm();
-                loadSalesData();
-            } else {
-                showError("Database Error", "Failed to add sale. Please try again.");
-            }
-
-        } catch (NumberFormatException e) {
-            showError("Validation Error", "Please enter valid numbers for all monetary fields.");
+        StringBuilder content = new StringBuilder();
+        for (SaleItem item : items) {
+            content.append(String.format("%s x%d @ $%.2f = $%.2f\n",
+                    item.getProductName(),
+                    item.getQuantity(),
+                    item.getUnitPrice(),
+                    item.getTotalPrice()));
         }
+
+        dialog.setContentText(content.toString());
+        dialog.showAndWait();
     }
 
     private void deleteSale() {
@@ -443,7 +539,7 @@ public class SalesPage extends ScrollPane {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirm Delete");
         confirm.setHeaderText("Delete Sale");
-        confirm.setContentText("Are you sure you want to delete this sale?");
+        confirm.setContentText("WARNING: This will NOT restore product quantities. Continue?");
 
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -455,46 +551,6 @@ public class SalesPage extends ScrollPane {
                 showError("Database Error", "Failed to delete sale.");
             }
         }
-    }
-
-    private void viewSaleDetails() {
-        Sale selected = salesTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showError("Selection Error", "Please select a sale to view.");
-            return;
-        }
-
-        Alert details = new Alert(Alert.AlertType.INFORMATION);
-        details.setTitle("Sale Details");
-        details.setHeaderText("Sale #" + selected.getId());
-
-        String content = String.format(
-                "Invoice: %s\n" +
-                        "Gross Revenue: $%,.2f\n" +
-                        "Cost of Goods Sold: $%,.2f\n" +
-                        "Operating Expenses: $%,.2f\n" +
-                        "Tax Amount: $%,.2f\n" +
-                        "Net Revenue: $%,.2f\n" +
-                        "Profit: $%,.2f\n" +
-                        "Profit Margin: %.2f%%\n" +
-                        "Payment Method: %s\n" +
-                        "Employee ID: %d\n" +
-                        "Date: %s",
-                selected.getInvoiceNumber() != null ? selected.getInvoiceNumber() : "N/A",
-                selected.getGrossRevenue(),
-                selected.getCostOfGoodsSold(),
-                selected.getOperatingExpenses(),
-                selected.getTaxAmount(),
-                selected.getNetRevenue(),
-                selected.getProfit(),
-                selected.getProfitMargin(),
-                selected.getPaymentMethod() != null ? selected.getPaymentMethod() : "N/A",
-                selected.getEmployeeId(),
-                selected.getSaleDate()
-        );
-
-        details.setContentText(content);
-        details.showAndWait();
     }
 
     private void loadSalesData() {
@@ -536,7 +592,6 @@ public class SalesPage extends ScrollPane {
     }
 
     private void updateCharts(List<Sale> sales) {
-        // Update trend chart
         salesTrendChart.getData().clear();
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Revenue");
@@ -544,12 +599,10 @@ public class SalesPage extends ScrollPane {
         Map<LocalDate, BigDecimal> dailyRevenue = new TreeMap<>();
         LocalDate today = LocalDate.now();
 
-        // Initialize last 7 days
         for (int i = 6; i >= 0; i--) {
             dailyRevenue.put(today.minusDays(i), BigDecimal.ZERO);
         }
 
-        // Sum revenue by date
         for (Sale sale : sales) {
             LocalDate date = sale.getSaleDate().toLocalDateTime().toLocalDate();
             if (dailyRevenue.containsKey(date)) {
@@ -566,7 +619,6 @@ public class SalesPage extends ScrollPane {
 
         salesTrendChart.getData().add(series);
 
-        // Update payment method chart
         paymentMethodChart.getData().clear();
         XYChart.Series<String, Number> paymentSeries = new XYChart.Series<>();
         paymentSeries.setName("Sales");
@@ -585,16 +637,6 @@ public class SalesPage extends ScrollPane {
         }
 
         paymentMethodChart.getData().add(paymentSeries);
-    }
-
-    private void clearForm() {
-        grossRevenueField.clear();
-        cogsField.setText("0.00");
-        operatingExpensesField.setText("0.00");
-        taxAmountField.setText("0.00");
-        paymentMethodCombo.setValue("Cash");
-        invoiceNumberField.clear();
-        employeeIdField.setText("0");
     }
 
     private void showError(String title, String message) {

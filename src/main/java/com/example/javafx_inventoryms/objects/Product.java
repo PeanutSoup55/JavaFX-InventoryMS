@@ -5,14 +5,16 @@ public class Product {
     private String name;
     private double price;
     private int quantity;
+    private double cog;
     private String station;
     private boolean isEmpty;
 
-    public Product(int id, String name, double price, int quantity, String station, boolean isEmpty) {
+    public Product(int id, String name, double price, int quantity, double cog, String station, boolean isEmpty) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.quantity = quantity;
+        this.cog = cog;
         this.station = station;
         this.isEmpty = isEmpty;
     }
@@ -48,6 +50,10 @@ public class Product {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+
+    public double getCog(){return cog;}
+
+    public void setCog(double cog){this.cog = cog;}
 
     public String getStation() {
         return station;

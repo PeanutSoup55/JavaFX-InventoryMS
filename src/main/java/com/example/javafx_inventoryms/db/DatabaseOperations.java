@@ -25,12 +25,12 @@ public class DatabaseOperations {
                 + "password VARCHAR(255) NOT NULL"
                 + ");";
 
-        // 2. Updated Products Table (Now with station and empty)
         String productsSQL = "CREATE TABLE IF NOT EXISTS products ("
                 + "id INT AUTO_INCREMENT PRIMARY KEY, "
                 + "name VARCHAR(100) NOT NULL, "
                 + "price DECIMAL(10, 2), "
                 + "quantity INT, "
+                + "cog DOUBLE(10, 2), "
                 + "station VARCHAR(50), "
                 + "is_empty BOOLEAN DEFAULT FALSE"
                 + ");";
@@ -80,14 +80,15 @@ public class DatabaseOperations {
         }
     }
 
-    public static boolean addProduct(String name, double price, int quantity, String station){
-        String sql = "INSERT INTO products (name, price, quantity, station, is_empty) VALUES (?, ?, ?, ?, ?)";
+    public static boolean addProduct(String name, double price, int quantity, double cog, String station){
+        String sql = "INSERT INTO products (name, price, quantity, cog, station, is_empty) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS); PreparedStatement statement = conn.prepareStatement(sql)){
             statement.setString(1, name);
             statement.setDouble(2, price);
             statement.setInt(3, quantity);
-            statement.setString(4, station);
-            statement.setBoolean(5, quantity == 0);
+            statement.setDouble(4, cog);
+            statement.setString(5, station);
+            statement.setBoolean(6, quantity == 0);
             statement.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -110,6 +111,7 @@ public class DatabaseOperations {
                     set.getString("name"),
                     set.getDouble("price"),
                     set.getInt("quantity"),
+                    set.getDouble("cog"),
                     set.getString("station"),
                     set.getBoolean("is_empty")
                 );
@@ -123,17 +125,18 @@ public class DatabaseOperations {
         return products;
     }
 
-    public static boolean updateProduct(int id, String name, double price, int quantity, String station){
-        String sql = "UPDATE products SET name=?, price=?, quantity=?, station=?, is_empty=? WHERE id=?";
+    public static boolean updateProduct(int id, String name, double price, double cog, int quantity, String station){
+        String sql = "UPDATE products SET name=?, price=?, cog=?, quantity=?, station=?, is_empty=? WHERE id=?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, name);
             pstmt.setDouble(2, price);
             pstmt.setInt(3, quantity);
-            pstmt.setString(4, station);
-            pstmt.setBoolean(5, quantity == 0);
-            pstmt.setInt(6, id);
+            pstmt.setDouble(4, cog);
+            pstmt.setString(5, station);
+            pstmt.setBoolean(6, quantity == 0);
+            pstmt.setInt(7, id);
 
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -289,7 +292,7 @@ public class DatabaseOperations {
 
         for (SaleItem item : items) {
             grossRevenue = grossRevenue.add(new BigDecimal(item.getTotalPrice()));
-            cogs = cogs.add(new BigDecimal(item.getTotalPrice()));
+            cogs = cogs.add(new BigDecimal(item.getTotalCOG()));
         }
 
         double taxRate = getTaxRate();

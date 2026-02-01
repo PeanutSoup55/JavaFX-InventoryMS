@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Finance extends VBox {
+public class Finance extends ScrollPane {
 
     private Label totalRevenueLabel;
     private Label totalProfitLabel;
@@ -28,14 +28,20 @@ public class Finance extends VBox {
     private LineChart<String, Number> revenueChart;
     private PieChart expenseBreakdownChart;
     private BarChart<String, Number> profitComparisonChart;
+    private VBox content;
 
     public Finance() {
-        getStyleClass().add("vbox-container");
-        setSpacing(20);
-        setPadding(new Insets(20));
+        content = new VBox(20);
+        content.getStyleClass().add("vbox-container");
+        content.setPadding(new Insets(20));
 
         initComponents();
         loadFinancialData();
+
+        setContent(content);
+        setFitToWidth(true);
+        setHbarPolicy(ScrollBarPolicy.NEVER);
+        setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
     }
 
     private void initComponents() {
@@ -71,7 +77,7 @@ public class Finance extends VBox {
         HBox buttonBox = new HBox(refreshButton);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
-        getChildren().addAll(
+        content.getChildren().addAll(
                 titleLabel,
                 metricsBox,
                 chartsRow1,
@@ -147,6 +153,7 @@ public class Finance extends VBox {
 
         CategoryAxis xAxis = new CategoryAxis();
         xAxis.setLabel("Date");
+        xAxis.setTickLabelRotation(45);
 
         NumberAxis yAxis = new NumberAxis();
         yAxis.setLabel("Revenue ($)");
@@ -154,7 +161,7 @@ public class Finance extends VBox {
         revenueChart = new LineChart<>(xAxis, yAxis);
         revenueChart.setTitle("");
         revenueChart.setLegendVisible(true);
-        revenueChart.setPrefHeight(300);
+        revenueChart.setPrefHeight(600);
 
         panel.getChildren().addAll(chartTitle, revenueChart);
         VBox.setVgrow(revenueChart, Priority.ALWAYS);
@@ -173,7 +180,7 @@ public class Finance extends VBox {
         expenseBreakdownChart = new PieChart();
         expenseBreakdownChart.setTitle("");
         expenseBreakdownChart.setLegendVisible(true);
-        expenseBreakdownChart.setPrefHeight(300);
+        expenseBreakdownChart.setPrefHeight(600);
 
         panel.getChildren().addAll(chartTitle, expenseBreakdownChart);
         VBox.setVgrow(expenseBreakdownChart, Priority.ALWAYS);
@@ -198,7 +205,7 @@ public class Finance extends VBox {
         profitComparisonChart = new BarChart<>(xAxis, yAxis);
         profitComparisonChart.setTitle("");
         profitComparisonChart.setLegendVisible(true);
-        profitComparisonChart.setPrefHeight(350);
+        profitComparisonChart.setPrefHeight(600);
 
         panel.getChildren().addAll(chartTitle, profitComparisonChart);
         VBox.setVgrow(profitComparisonChart, Priority.ALWAYS);

@@ -109,7 +109,7 @@ public class SalesPage extends ScrollPane {
         titleLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
 
         Label valueLabel = new Label(value);
-        valueLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+        valueLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-padding: 0 5 0 0;");
 
         VBox content = new VBox(5, titleLabel, valueLabel);
         content.setAlignment(Pos.CENTER);
@@ -333,6 +333,7 @@ public class SalesPage extends ScrollPane {
 
         CategoryAxis xAxis = new CategoryAxis();
         xAxis.setLabel("Date");
+        xAxis.setTickLabelRotation(45);
 
         NumberAxis yAxis = new NumberAxis();
         yAxis.setLabel("Revenue ($)");
@@ -340,7 +341,7 @@ public class SalesPage extends ScrollPane {
         salesTrendChart = new LineChart<>(xAxis, yAxis);
         salesTrendChart.setTitle("");
         salesTrendChart.setLegendVisible(true);
-        salesTrendChart.setPrefHeight(250);
+        salesTrendChart.setPrefHeight(350);
 
         chartPanel.getChildren().addAll(chartTitle, salesTrendChart);
 
@@ -364,7 +365,7 @@ public class SalesPage extends ScrollPane {
         paymentMethodChart = new BarChart<>(xAxis, yAxis);
         paymentMethodChart.setTitle("");
         paymentMethodChart.setLegendVisible(false);
-        paymentMethodChart.setPrefHeight(250);
+        paymentMethodChart.setPrefHeight(350);
 
         chartPanel.getChildren().addAll(chartTitle, paymentMethodChart);
 

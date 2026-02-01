@@ -45,11 +45,29 @@ public class DatabaseOperations {
                 + "sale_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
                 + ");";
 
+        String settingsSQL = "CREATE TABLE IF NOT EXISTS settings ("
+                + "id INT PRIMARY KEY DEFAULT 1, "
+                + "tax_rate DECIMAL(5,2) DEFAULT 13.00"
+                + ");";
+
+        String saleItemsSQL = "CREATE TABLE IF NOT EXISTS sale_items ("
+                + "id INT AUTO_INCREMENT PRIMARY KEY, "
+                + "sale_id INT NOT NULL, "
+                + "product_id INT NOT NULL, "
+                + "quantity INT NOT NULL, "
+                + "unit_price DECIMAL(10,2) NOT NULL, "
+                + "total_price DECIMAL(10,2) NOT NULL, "
+                + "FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE, "
+                + "FOREIGN KEY (product_id) REFERENCES products(id)"
+                + ");";
+
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS); Statement statement = conn.createStatement()){
 
             statement.executeUpdate(usersSQL);
             statement.executeUpdate(productsSQL);
             statement.executeUpdate(salesSQL);
+            statement.executeUpdate(settingsSQL);
+            statement.executeUpdate(saleItemsSQL);
             System.out.println("Tables initialized successfully");
 
         }catch (Exception e){

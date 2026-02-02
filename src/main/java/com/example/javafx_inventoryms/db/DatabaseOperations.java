@@ -22,7 +22,9 @@ public class DatabaseOperations {
         String usersSQL = "CREATE TABLE IF NOT EXISTS users ("
                 + "id INT AUTO_INCREMENT PRIMARY KEY, "
                 + "username VARCHAR(50) UNIQUE NOT NULL, "
-                + "password VARCHAR(255) NOT NULL"
+                + "password VARCHAR(255) NOT NULL, "
+                + "position VARCHAR(255) NOT NULL, "
+                + "pay DOUBLE(10, 2) NOT NULL"
                 + ");";
 
         String productsSQL = "CREATE TABLE IF NOT EXISTS products ("
@@ -432,96 +434,102 @@ public class DatabaseOperations {
         return revenueByProduct;
     }
 
-    // User Operations
-//    public static boolean addUser(String username, String password) {
-//        String sql = "INSERT INTO users (username, password) VALUES (?, ?)";
-//        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setString(1, username);
-//            pstmt.setString(2, password);
-//
-//            pstmt.executeUpdate();
-//            return true;
-//        } catch (SQLException e) {
-//            for (StackTraceElement el : e.getStackTrace()) {
-//                System.err.println(el);
-//            }
-//            return false;
-//        }
-//    }
-//    public static List<User> getAllUsers() {
-//        List<User> users = new ArrayList<>();
-//        String sql = "SELECT * FROM users";
-//
-//        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-//             Statement stmt = conn.createStatement();
-//             ResultSet rs = stmt.executeQuery(sql)) {
-//
-//            while (rs.next()) {
-//                User u = new User(
-//                        rs.getInt("id"),
-//                        rs.getString("username"),
-//                        rs.getString("password")
-//                );
-//                users.add(u);
-//            }
-//        } catch (SQLException e) {
-//            for (StackTraceElement el : e.getStackTrace()) {
-//                System.err.println(el);
-//            }
-//        }
-//        return users;
-//    }
-//
-//    public static boolean updateUser(int id, String username, String password) {
-//        String sql = "UPDATE users SET username=?, password=? WHERE id=?";
-//        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setString(1, username);
-//            pstmt.setString(2, password);
-//            pstmt.setInt(3, id);
-//
-//            return pstmt.executeUpdate() > 0;
-//        } catch (SQLException e) {
-//            for (StackTraceElement el : e.getStackTrace()) {
-//                System.err.println(el);
-//            }
-//            return false;
-//        }
-//    }
-//
-//    public static boolean deleteUser(int id) {
-//        String sql = "DELETE FROM users WHERE id=?";
-//        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setInt(1, id);
-//            return pstmt.executeUpdate() > 0;
-//        } catch (SQLException e) {
-//            for (StackTraceElement el : e.getStackTrace()) {
-//                System.err.println(el);
-//            }
-//            return false;
-//        }
-//    }
-//
-//    public static boolean validateUser(String username, String password) {
-//        String sql = "SELECT * FROM users WHERE username=? AND password=?";
-//        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setString(1, username);
-//            pstmt.setString(2, password);
-//
-//            ResultSet rs = pstmt.executeQuery();
-//            return rs.next();
-//        } catch (SQLException e) {
-//            for (StackTraceElement el : e.getStackTrace()) {
-//                System.err.println(el);
-//            }
-//            return false;
-//        }
-//    }
+     //User Operations
+    public static boolean addUser(String username, String password, String position, double pay) {
+        String sql = "INSERT INTO users (username, password, position, pay) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+            pstmt.setString(3, position);
+            pstmt.setDouble(4, pay);
+
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
+            return false;
+        }
+    }
+    public static List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM users";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                User u = new User(
+                        rs.getInt("id"),
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("position"),
+                        rs.getDouble("pay")
+                );
+                users.add(u);
+            }
+        } catch (SQLException e) {
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
+        }
+        return users;
+    }
+
+    public static boolean updateUser(int id, String username, String password, String position, double pay) {
+        String sql = "UPDATE users SET username=?, password=? WHERE id=?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+            pstmt.setInt(0, id);
+            pstmt.setString(3, position);
+            pstmt.setDouble(4, pay);
+
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
+            return false;
+        }
+    }
+
+    public static boolean deleteUser(int id) {
+        String sql = "DELETE FROM users WHERE id=?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
+            return false;
+        }
+    }
+
+    public static boolean validateUser(String username, String password) {
+        String sql = "SELECT * FROM users WHERE username=? AND password=?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
+            return false;
+        }
+    }
 }

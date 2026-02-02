@@ -4,14 +4,14 @@ public class User {
     private int id;
     private String username;
     private String password;
-    private String rank;
+    private String position;
     private double pay;
 
-    public User(int id, String username, String password, String rank, double pay) {
+    public User(int id, String username, String password, String position, double pay) {
         this.id = id;
         this.username = username;
         this.password = password;
-        this.rank = rank;
+        this.position = position;
         this.pay = pay;
     }
 
@@ -39,12 +39,12 @@ public class User {
         this.password = password;
     }
 
-    public String getRank() {
-        return rank;
+    public String getPosition() {
+        return position;
     }
 
-    public void setRank(String rank) {
-        this.rank = rank;
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     public double getPay() {

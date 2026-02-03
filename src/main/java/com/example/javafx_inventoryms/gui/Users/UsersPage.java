@@ -1,15 +1,14 @@
 package com.example.javafx_inventoryms.gui.Users;
 
+import com.example.javafx_inventoryms.objects.Product;
 import com.example.javafx_inventoryms.objects.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.*;
 
 public class UsersPage extends VBox {
     private TableView<User> userTable;
@@ -90,7 +89,45 @@ public class UsersPage extends VBox {
 
         userTable = new TableView<>();
         userData = FXCollections.observableArrayList();
+        userTable.setItems(userData);
+        userTable.setPlaceholder(new Label("No users"));
 
+        TableColumn<User, Integer> idCol = new TableColumn<>("ID");
+        idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
+        idCol.setPrefWidth(60);
+
+        TableColumn<User, String> nameCol = new TableColumn<>("Name");
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("username"));
+        nameCol.setPrefWidth(180);
+
+        TableColumn<User, String> passCol = new TableColumn<>("Password");
+        passCol.setCellValueFactory(new PropertyValueFactory<>("password"));
+        passCol.setPrefWidth(180);
+
+        TableColumn<User, String> posCol = new TableColumn<>("Position");
+        posCol.setCellValueFactory(new PropertyValueFactory<>("position"));
+        posCol.setPrefWidth(160);
+
+        TableColumn<User, Double> payCol = new TableColumn<>("Hourly Wage");
+        payCol.setCellValueFactory(new PropertyValueFactory<>("pay"));
+        payCol.setPrefWidth(100);
+        payCol.setCellFactory(col -> new TableCell<User, Double>() {
+            @Override
+            protected void updateItem(Double pay, boolean empty) {
+                super.updateItem(pay, empty);
+                if (empty || pay == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("$%.2f", pay));
+                }
+            }
+        });
+
+        userTable.getColumns().addAll(idCol, nameCol, passCol, posCol, payCol);
+        userTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        VBox.setVgrow(userTable, Priority.ALWAYS);
+        getChildren().addAll(formPanel, tableTitle, userTable);
     }
     private void loadUsers(){
 

@@ -100,6 +100,8 @@ public class ViewAddProducts extends VBox {
 
         formPanel.getChildren().addAll(formTitle, formGrid, buttonPanel);
 
+        VBox tablePanel = new VBox(16);
+        tablePanel.setPadding(new Insets(24));
         // Table for displaying products
         Label tableTitle = new Label("All Products");
         tableTitle.getStyleClass().add("section-title");
@@ -185,8 +187,17 @@ public class ViewAddProducts extends VBox {
         productTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         VBox.setVgrow(productTable, Priority.ALWAYS);
+        tablePanel.getChildren().addAll(tableTitle, productTable);
 
-        getChildren().addAll(formPanel, tableTitle, productTable);
+        HBox mainLayout = new HBox(24);
+        mainLayout.setPadding(new Insets(24));
+        HBox.setHgrow(formPanel, Priority.NEVER);
+        HBox.setHgrow(tablePanel, Priority.ALWAYS);
+        VBox.setVgrow(mainLayout, Priority.ALWAYS);  // Make HBox grow vertically
+
+        mainLayout.getChildren().addAll(formPanel, tablePanel);
+
+        getChildren().add(mainLayout);
     }
 
     private void loadProducts() {

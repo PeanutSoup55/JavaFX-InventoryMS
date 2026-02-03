@@ -43,12 +43,11 @@ public class Home extends BorderPane {
         MenuItem financeItem = new MenuItem("Financial Overview");
         MenuItem payrollItem = new MenuItem("Payroll Management");
         MenuItem usersItem = new MenuItem("View Users");
-        MenuItem usersAdd = new MenuItem("Add User");
 
         productsMenu.getItems().addAll(productsItem, productsAdd);
         salesMenu.getItems().addAll(salesItem);
         financeMenu.getItems().addAll(financeItem, payrollItem);
-        usersMenu.getItems().addAll(usersItem, usersAdd);
+        usersMenu.getItems().addAll(usersItem);
         settingsMenu.getItems().add(taxSettingsItem);
 
         menuBar.getMenus().addAll(salesMenu, productsMenu, financeMenu, usersMenu, settingsMenu);

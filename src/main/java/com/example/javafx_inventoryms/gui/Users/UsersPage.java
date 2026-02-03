@@ -32,7 +32,7 @@ public class UsersPage extends VBox {
         formPanel.getStyleClass().add("form-panel");
         formPanel.setPadding(new Insets(24));
         Label formTitle = new Label("Add new User");
-        formPanel.getStyleClass().add("form-title");
+        formTitle.getStyleClass().add("form-title");
         GridPane formGrid = new GridPane();
         formGrid.getStyleClass().add("grid-pane");
         formGrid.setHgap(12);
@@ -86,6 +86,9 @@ public class UsersPage extends VBox {
         buttonPanel.getChildren().addAll(addBtn, refreshBtn);
         formPanel.getChildren().addAll(formTitle, formGrid, buttonPanel);
 
+        VBox tablePanel = new VBox(16);
+        tablePanel.setPadding(new Insets(24));
+
         Label tableTitle = new Label("All Users");
         tableTitle.getStyleClass().add("section-title");
 
@@ -129,7 +132,17 @@ public class UsersPage extends VBox {
         userTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         VBox.setVgrow(userTable, Priority.ALWAYS);
-        getChildren().addAll(formPanel, tableTitle, userTable);
+        tablePanel.getChildren().addAll(tableTitle, userTable);
+
+        HBox mainLayout = new HBox(24);
+        mainLayout.setPadding(new Insets(24));
+        HBox.setHgrow(formPanel, Priority.NEVER);
+        HBox.setHgrow(tablePanel, Priority.ALWAYS);
+        VBox.setVgrow(mainLayout, Priority.ALWAYS);  // Make HBox grow vertically
+
+        mainLayout.getChildren().addAll(formPanel, tablePanel);
+
+        getChildren().add(mainLayout);
     }
     private void loadUsers(){
         userData.clear();

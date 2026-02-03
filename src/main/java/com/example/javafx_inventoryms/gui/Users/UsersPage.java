@@ -1,6 +1,6 @@
 package com.example.javafx_inventoryms.gui.Users;
 
-import com.example.javafx_inventoryms.objects.Product;
+import com.example.javafx_inventoryms.db.DatabaseOperations;
 import com.example.javafx_inventoryms.objects.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,6 +10,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 
+import java.util.List;
+
 public class UsersPage extends VBox {
     private TableView<User> userTable;
     private ObservableList<User> userData;
@@ -17,7 +19,7 @@ public class UsersPage extends VBox {
     private Button addBtn, refreshBtn;
 
     public UsersPage(){
-        getStyleClass().add("vb0x-container");
+        getStyleClass().add("vbox-container");
         setSpacing(20);
         setPadding(new Insets(20));
         initComponents();
@@ -47,27 +49,27 @@ public class UsersPage extends VBox {
 
         Label passLabel = new Label("Password:");
         passLabel.getStyleClass().add("form-label");
-        formGrid.add(passLabel, 0, 0);
+        formGrid.add(passLabel, 0, 1);
         passField = new TextField();
         passField.setPromptText("Enter Password");
         passField.setPrefWidth(300);
-        formGrid.add(passField, 1, 0);
+        formGrid.add(passField, 1, 1);
 
         Label posLabel = new Label("Position:");
         posLabel.getStyleClass().add("form-label");
-        formGrid.add(posLabel, 0, 0);
+        formGrid.add(posLabel, 0, 2);
         posField = new TextField();
         posField.setPromptText("Enter Position");
         posField.setPrefWidth(300);
-        formGrid.add(posField, 1, 0);
+        formGrid.add(posField, 1, 2);
 
         Label payLabel = new Label("Hourly Rate:");
         payLabel.getStyleClass().add("form-label");
-        formGrid.add(payLabel, 0, 0);
+        formGrid.add(payLabel, 0, 3);
         payField = new TextField();
         payField.setPromptText("$0.00");
         payField.setPrefWidth(300);
-        formGrid.add(payField, 1, 0);
+        formGrid.add(payField, 1, 3);
 
         HBox buttonPanel = new HBox(12);
         buttonPanel.setAlignment(Pos.CENTER_LEFT);
@@ -130,10 +132,50 @@ public class UsersPage extends VBox {
         getChildren().addAll(formPanel, tableTitle, userTable);
     }
     private void loadUsers(){
-
+        userData.clear();
+        List<User> users = DatabaseOperations.getAllUsers();
+        userData.addAll(users);
+        clearFields();
     }
     private void addUser(){
+        try {
+            String name = nameField.getText().trim();
+            String pass = passField.getText().trim();
+            String pos = posField.getText().trim();
+            String pay = payField.getText().trim();
 
+            if (name.isEmpty()){
+                showAlert(Alert.AlertType.WARNING, "Validation Error", "Enter a name");
+                return;
+            }
+            if (pass.length() < 8){
+                showAlert(Alert.AlertType.WARNING, "Validation Error", "Enter a password longer then 8 characters");
+                return;
+            }
+            if (pos.isEmpty()){
+                showAlert(Alert.AlertType.WARNING, "Validation Error", "Enter a position");
+                return;
+            }
+            double payNum = Double.parseDouble(pay);
+            if (payNum < 15){
+                showAlert(Alert.AlertType.WARNING, "Validation Error", "Enter pay at or above minimum wage");
+                return;
+            }
+
+            if (DatabaseOperations.addUser(name, pass, pos, payNum)){
+                showAlert(Alert.AlertType.INFORMATION, "Success", "User added succesfully");
+                loadUsers();
+            }else {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to add user");
+            }
+        }catch (NumberFormatException e){
+            showAlert(Alert.AlertType.ERROR, "Input Error", "Enter a valid number for pay");
+        }catch (Exception e){
+            showAlert(Alert.AlertType.ERROR, "Database Error", "Error: " + e.getMessage());
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
+        }
     }
     private void clearFields(){
         nameField.clear();

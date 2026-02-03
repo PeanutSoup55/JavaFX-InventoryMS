@@ -271,7 +271,9 @@ public class DatabaseOperations {
                 return rs.getDouble("tax_rate");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
         }
         return 13.0;
     }
@@ -283,7 +285,9 @@ public class DatabaseOperations {
             stmt.setDouble(1, rate);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
         }
         return false;
     }
@@ -345,7 +349,9 @@ public class DatabaseOperations {
             return -1;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
             return -1;
         }
     }
@@ -382,7 +388,9 @@ public class DatabaseOperations {
                 ));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
         }
 
         return items;
@@ -406,7 +414,9 @@ public class DatabaseOperations {
                 topProducts.put(rs.getString("name"), rs.getInt("total_sold"));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
         }
 
         return topProducts;
@@ -428,7 +438,9 @@ public class DatabaseOperations {
                 revenueByProduct.put(rs.getString("name"), rs.getDouble("total_revenue"));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            for (StackTraceElement el : e.getStackTrace()) {
+                System.err.println(el);
+            }
         }
 
         return revenueByProduct;

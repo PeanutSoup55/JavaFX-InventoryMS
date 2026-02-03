@@ -6,6 +6,8 @@ public class User {
     private String password;
     private String position;
     private double pay;
+//    private Blob image;
+//    private String ImagePath;
 
     public User(int id, String username, String password, String position, double pay) {
         this.id = id;

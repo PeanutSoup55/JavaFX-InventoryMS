@@ -4,6 +4,7 @@ import com.example.javafx_inventoryms.db.DatabaseOperations;
 import com.example.javafx_inventoryms.objects.Sale;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -28,6 +29,7 @@ public class Finance extends ScrollPane {
     private LineChart<String, Number> revenueChart;
     private PieChart expenseBreakdownChart;
     private BarChart<String, Number> profitComparisonChart;
+    private BarChart<String, Number> topProductsChart;
     private VBox content;
 
     public Finance() {
@@ -52,7 +54,7 @@ public class Finance extends ScrollPane {
         // Key Metrics Cards
         HBox metricsBox = createMetricsCards();
 
-        // Charts Section
+        // Charts Section - Row 1
         HBox chartsRow1 = new HBox(20);
         chartsRow1.setAlignment(Pos.CENTER);
 
@@ -66,11 +68,19 @@ public class Finance extends ScrollPane {
         HBox.setHgrow(revenueChartPanel, Priority.ALWAYS);
         HBox.setHgrow(expenseChartPanel, Priority.ALWAYS);
 
+        // Charts Section - Row 2 (side by side)
+        HBox chartsRow2 = new HBox(20);
+        chartsRow2.setAlignment(Pos.CENTER);
+
         // Profit Comparison Bar Chart
         VBox profitChartPanel = createProfitChart();
 
         // Product Analytics
         VBox productAnalyticsPanel = createProductAnalyticsPanel();
+
+        chartsRow2.getChildren().addAll(profitChartPanel, productAnalyticsPanel);
+        HBox.setHgrow(profitChartPanel, Priority.ALWAYS);
+        HBox.setHgrow(productAnalyticsPanel, Priority.ALWAYS);
 
         // Refresh Button
         Button refreshButton = new Button("Refresh Data");
@@ -84,8 +94,7 @@ public class Finance extends ScrollPane {
                 titleLabel,
                 metricsBox,
                 chartsRow1,
-                profitChartPanel,
-                productAnalyticsPanel,
+                chartsRow2,
                 buttonBox
         );
     }
@@ -178,7 +187,7 @@ public class Finance extends ScrollPane {
         panel.getStyleClass().add("form-panel");
         panel.setPadding(new Insets(20));
 
-        Label chartTitle = new Label("Expense Breakdown");
+        Label chartTitle = new Label("Revenue Breakdown: COGS, OpEx & Profit");
         chartTitle.getStyleClass().add("section-title");
 
         expenseBreakdownChart = new PieChart();
@@ -217,10 +226,35 @@ public class Finance extends ScrollPane {
         return panel;
     }
 
+    private VBox createProductAnalyticsPanel() {
+        VBox panel = new VBox(10);
+        panel.getStyleClass().add("form-panel");
+        panel.setPadding(new Insets(20));
+
+        Label chartTitle = new Label("Top Selling Products");
+        chartTitle.getStyleClass().add("section-title");
+
+        CategoryAxis xAxis = new CategoryAxis();
+        xAxis.setLabel("Product");
+
+        NumberAxis yAxis = new NumberAxis();
+        yAxis.setLabel("Units Sold");
+
+        topProductsChart = new BarChart<>(xAxis, yAxis);
+        topProductsChart.setTitle("");
+        topProductsChart.setLegendVisible(false);
+        topProductsChart.setPrefHeight(600);
+
+        panel.getChildren().addAll(chartTitle, topProductsChart);
+        VBox.setVgrow(topProductsChart, Priority.ALWAYS);
+
+        return panel;
+    }
+
     private void loadFinancialData() {
         List<Sale> sales = DatabaseOperations.getAllSales();
 
-        if (sales.isEmpty()) {
+        if (sales == null || sales.isEmpty()) {
             showNoDataMessage();
             return;
         }
@@ -232,11 +266,30 @@ public class Finance extends ScrollPane {
         BigDecimal totalOpEx = BigDecimal.ZERO;
 
         for (Sale sale : sales) {
-            totalRevenue = totalRevenue.add(sale.getNetRevenue());
-            totalProfit = totalProfit.add(sale.getProfit());
-            totalCOGS = totalCOGS.add(sale.getCostOfGoodsSold());
-            totalOpEx = totalOpEx.add(sale.getOperatingExpenses());
+            // Check if methods exist and handle null values
+            try {
+                if (sale.getNetRevenue() != null) {
+                    totalRevenue = totalRevenue.add(sale.getNetRevenue());
+                }
+                if (sale.getProfit() != null) {
+                    totalProfit = totalProfit.add(sale.getProfit());
+                }
+                if (sale.getCostOfGoodsSold() != null) {
+                    totalCOGS = totalCOGS.add(sale.getCostOfGoodsSold());
+                }
+                if (sale.getOperatingExpenses() != null) {
+                    totalOpEx = totalOpEx.add(sale.getOperatingExpenses());
+                }
+            } catch (Exception e) {
+                System.err.println("Error processing sale: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
+
+        System.out.println("Debug - Total Revenue: " + totalRevenue);
+        System.out.println("Debug - Total Profit: " + totalProfit);
+        System.out.println("Debug - Total COGS: " + totalCOGS);
+        System.out.println("Debug - Total OpEx: " + totalOpEx);
 
         // Update metric cards
         totalRevenueLabel.setText(String.format("$%,.2f", totalRevenue));
@@ -261,8 +314,9 @@ public class Finance extends ScrollPane {
 
         // Load charts
         loadRevenueChart(sales);
-        loadExpenseChart(totalCOGS, totalOpEx);
+        loadExpenseChart(totalCOGS, totalOpEx, totalProfit); // PASSING PROFIT TOO!
         loadProfitComparisonChart(sales);
+        loadTopProductsChart();
     }
 
     private void loadRevenueChart(List<Sale> sales) {
@@ -303,20 +357,44 @@ public class Finance extends ScrollPane {
         revenueChart.getData().addAll(revenueSeries, profitSeries);
     }
 
-    private void loadExpenseChart(BigDecimal totalCOGS, BigDecimal totalOpEx) {
+    private void loadExpenseChart(BigDecimal totalCOGS, BigDecimal totalOpEx, BigDecimal totalProfit) {
         expenseBreakdownChart.getData().clear();
 
-        PieChart.Data cogsData = new PieChart.Data(
-                String.format("COGS ($%,.2f)", totalCOGS),
-                totalCOGS.doubleValue()
-        );
+        System.out.println("Loading Expense Chart - COGS: " + totalCOGS + ", OpEx: " + totalOpEx + ", PROFIT: " + totalProfit);
 
-        PieChart.Data opexData = new PieChart.Data(
-                String.format("Operating Expenses ($%,.2f)", totalOpEx),
-                totalOpEx.doubleValue()
-        );
+        // Add COGS if greater than zero
+        if (totalCOGS.compareTo(BigDecimal.ZERO) > 0) {
+            PieChart.Data cogsData = new PieChart.Data(
+                    String.format("COGS ($%,.2f)", totalCOGS),
+                    totalCOGS.doubleValue()
+            );
+            expenseBreakdownChart.getData().add(cogsData);
+        }
 
-        expenseBreakdownChart.getData().addAll(cogsData, opexData);
+        // Add Operating Expenses if greater than zero
+        if (totalOpEx.compareTo(BigDecimal.ZERO) > 0) {
+            PieChart.Data opexData = new PieChart.Data(
+                    String.format("Operating Expenses ($%,.2f)", totalOpEx),
+                    totalOpEx.doubleValue()
+            );
+            expenseBreakdownChart.getData().add(opexData);
+        }
+
+        // ADD PROFIT - DON'T FORGET PROFIT!!!
+        if (totalProfit.compareTo(BigDecimal.ZERO) > 0) {
+            PieChart.Data profitData = new PieChart.Data(
+                    String.format("Profit ($%,.2f)", totalProfit),
+                    totalProfit.doubleValue()
+            );
+            expenseBreakdownChart.getData().add(profitData);
+        }
+
+        // If no data, show a message
+        if (expenseBreakdownChart.getData().isEmpty()) {
+            PieChart.Data noData = new PieChart.Data("No Data Available", 1);
+            expenseBreakdownChart.getData().add(noData);
+            System.out.println("Warning: No data to display in pie chart");
+        }
     }
 
     private void loadProfitComparisonChart(List<Sale> sales) {
@@ -343,6 +421,46 @@ public class Finance extends ScrollPane {
         }
 
         profitComparisonChart.getData().addAll(revenueSeries, expenseSeries, profitSeries);
+    }
+
+    private void loadTopProductsChart() {
+        topProductsChart.getData().clear();
+
+        Map<String, Integer> topProducts = DatabaseOperations.getTopSellingProducts(10);
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Units Sold");
+
+        for (Map.Entry<String, Integer> entry : topProducts.entrySet()) {
+            XYChart.Data<String, Number> data = new XYChart.Data<>(entry.getKey(), entry.getValue());
+            series.getData().add(data);
+        }
+
+        topProductsChart.getData().add(series);
+
+        // Apply colors to top 3 products after chart is rendered
+        javafx.application.Platform.runLater(() -> {
+            int index = 0;
+            for (XYChart.Data<String, Number> data : series.getData()) {
+                Node bar = data.getNode();
+                if (bar != null) {
+                    if (index == 0) {
+                        // Gold for #1
+                        bar.setStyle("-fx-bar-fill: #FFD700;");
+                    } else if (index == 1) {
+                        // Silver for #2
+                        bar.setStyle("-fx-bar-fill: #C0C0C0;");
+                    } else if (index == 2) {
+                        // Bronze for #3
+                        bar.setStyle("-fx-bar-fill: #CD7F32;");
+                    } else {
+                        // Default blue for others
+                        bar.setStyle("-fx-bar-fill: #6366f1;");
+                    }
+                }
+                index++;
+            }
+        });
     }
 
     private Map<String, BigDecimal> calculateWeeklyTotals(
@@ -383,39 +501,5 @@ public class Finance extends ScrollPane {
         alert.setHeaderText(null);
         alert.setContentText("No sales data available. Add sales to see financial metrics.");
         alert.showAndWait();
-    }
-    private VBox createProductAnalyticsPanel() {
-        VBox panel = new VBox(10);
-        panel.getStyleClass().add("form-panel");
-        panel.setPadding(new Insets(20));
-
-        Label chartTitle = new Label("Top Selling Products");
-        chartTitle.getStyleClass().add("section-title");
-
-        CategoryAxis xAxis = new CategoryAxis();
-        xAxis.setLabel("Product");
-
-        NumberAxis yAxis = new NumberAxis();
-        yAxis.setLabel("Units Sold");
-
-        BarChart<String, Number> topProductsChart = new BarChart<>(xAxis, yAxis);
-        topProductsChart.setTitle("");
-        topProductsChart.setLegendVisible(false);
-        topProductsChart.setPrefHeight(400);
-
-        Map<String, Integer> topProducts = DatabaseOperations.getTopSellingProducts(10);
-
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName("Units Sold");
-
-        for (Map.Entry<String, Integer> entry : topProducts.entrySet()) {
-            series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
-        }
-
-        topProductsChart.getData().add(series);
-
-        panel.getChildren().addAll(chartTitle, topProductsChart);
-
-        return panel;
     }
 }

@@ -1,4 +1,4 @@
-package com.example.javafx_inventoryms.gui.Sales;
+package com.example.javafx_inventoryms.gui.Finance;
 
 import com.example.javafx_inventoryms.db.DatabaseOperations;
 import com.example.javafx_inventoryms.objects.Sale;

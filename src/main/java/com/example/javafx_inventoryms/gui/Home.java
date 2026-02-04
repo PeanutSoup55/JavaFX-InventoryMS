@@ -2,8 +2,8 @@ package com.example.javafx_inventoryms.gui;
 
 import com.example.javafx_inventoryms.gui.Products.UpdateDeleteProducts;
 import com.example.javafx_inventoryms.gui.Products.ViewAddProducts;
-import com.example.javafx_inventoryms.gui.Sales.Finance;
-import com.example.javafx_inventoryms.gui.Sales.Payroll;
+import com.example.javafx_inventoryms.gui.Finance.Finance;
+import com.example.javafx_inventoryms.gui.Finance.Payroll;
 import com.example.javafx_inventoryms.gui.Sales.SalesPage;
 import com.example.javafx_inventoryms.gui.Users.UsersPage;
 import javafx.scene.control.Menu;

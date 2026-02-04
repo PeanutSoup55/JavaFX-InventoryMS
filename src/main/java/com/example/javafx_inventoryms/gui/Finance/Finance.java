@@ -1,4 +1,4 @@
-package com.example.javafx_inventoryms.gui.Sales;
+package com.example.javafx_inventoryms.gui.Finance;
 
 import com.example.javafx_inventoryms.db.DatabaseOperations;
 import com.example.javafx_inventoryms.objects.Sale;
@@ -8,7 +8,6 @@ import javafx.scene.Node;
 import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

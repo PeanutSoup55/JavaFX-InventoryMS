@@ -104,7 +104,7 @@ public class SalesPage extends ScrollPane {
         titleLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
 
         Label valueLabel = new Label(value);
-        valueLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-padding: 0 5 0 0;");
+        valueLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: 500; -fx-text-fill: #10b981; -fx-padding: 0 5 0 0;");
 
         VBox content = new VBox(5, titleLabel, valueLabel);
         content.setAlignment(Pos.CENTER);
@@ -149,7 +149,7 @@ public class SalesPage extends ScrollPane {
 
         Label currentSaleLabel = new Label("Current Sale Items:");
         currentSaleLabel.getStyleClass().add("form-label");
-        currentSaleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        currentSaleLabel.setStyle("-fx-font-weight: 500; -fx-font-size: 14px;");
 
         currentSaleTable = new TableView<>();
         currentSaleTable.setItems(currentSaleItems);
@@ -186,7 +186,7 @@ public class SalesPage extends ScrollPane {
         taxLabel.setStyle("-fx-font-size: 14px;");
 
         totalLabel = new Label("Total: $0.00");
-        totalLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+        totalLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: 500; -fx-text-fill: #10b981;");
 
         Label paymentLabel = new Label("Payment Method:");
         paymentLabel.getStyleClass().add("form-label");
@@ -409,9 +409,9 @@ public class SalesPage extends ScrollPane {
                 } else {
                     setText(String.format("$%,.2f", item));
                     if (item.compareTo(BigDecimal.ZERO) >= 0) {
-                        setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
+                        setStyle("-fx-text-fill: #10b981; -fx-font-weight: 500;");
                     } else {
-                        setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+                        setStyle("-fx-text-fill: #ef4444; -fx-font-weight: 500;");
                     }
                 }
             }
